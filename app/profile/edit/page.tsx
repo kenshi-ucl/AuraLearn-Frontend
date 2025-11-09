@@ -31,7 +31,7 @@ export default function ProfileEditPage() {
     email: user?.email || '',
     avatar: user?.avatar || '',
     theme: user?.preferences?.theme || 'light',
-    notifications: user?.preferences?.notifications || true,
+    notifications: user?.preferences?.pushNotifications || true,
     language: user?.preferences?.language || 'en',
     currentPassword: '',
     newPassword: '',
@@ -76,7 +76,7 @@ export default function ProfileEditPage() {
       avatar: formData.avatar,
       preferences: {
         theme: formData.theme as 'light' | 'dark',
-        notifications: formData.notifications,
+        pushNotifications: formData.notifications,
         language: formData.language
       }
     });
