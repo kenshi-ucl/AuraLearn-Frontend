@@ -75,10 +75,11 @@ export default function ProfileEditPage() {
       email: formData.email,
       avatar: formData.avatar,
       preferences: {
+        ...user?.preferences,
         theme: formData.theme as 'light' | 'dark',
-        pushNotifications: formData.notifications,
+        notifications: formData.notifications,
         language: formData.language
-      }
+      } as any
     });
 
     setIsEditing(false);
