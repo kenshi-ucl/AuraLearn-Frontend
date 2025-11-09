@@ -32,7 +32,7 @@ export default function AdminSettingsPage() {
           }
         });
       });
-      form.setFieldsValues(initialValues);
+      form.setFieldsValue(initialValues);
     } catch (error) {
       messageApi.error("Failed to load settings");
       console.error(error);
