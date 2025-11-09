@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Table, Chart, Spin, Select, DatePicker, Typography } from 'antd';
+import { Card, Row, Col, Statistic, Table, Spin, Select, DatePicker, Typography } from 'antd';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrophyOutlined, BookOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Users } from 'lucide-react';
