@@ -65,10 +65,10 @@ async function request(endpoint: string, options: RequestInit = {}): Promise<any
         // Get auth token from localStorage
         const token = localStorage.getItem('auralearn_token');
         
-        const headers: HeadersInit = {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            ...(options.headers || {}),
+            ...(options.headers || {} as Record<string, string>),
         };
 
         if (token) {
