@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Chart, Spin, Select, DatePicker, Typography } from 'antd';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrophyOutlined, UsergroupOutlined, BookOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { TrophyOutlined, BookOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Users } from 'lucide-react';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -205,7 +206,7 @@ export default function AnalyticsDashboard() {
             <Statistic
               title="Active Users"
               value={dashboardData.overview.total_users}
-              prefix={<UsergroupOutlined />}
+              prefix={<Users className="w-4 h-4" />}
               valueStyle={{ color: '#722ed1' }}
             />
           </Card>
