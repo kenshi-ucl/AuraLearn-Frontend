@@ -36,7 +36,7 @@ export default function HtmlOutputComparison({
       .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
   };
 
-  const renderHtmlInIframe = (html: string, ref: React.RefObject<HTMLIFrameElement>) => {
+  const renderHtmlInIframe = (html: string, ref: React.RefObject<HTMLIFrameElement | null>) => {
     if (ref.current) {
       const doc = ref.current.contentDocument || ref.current.contentWindow?.document;
       if (doc) {
