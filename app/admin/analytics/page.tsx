@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+// Fixed: Removed Chart import - not exported by antd
 import { Card, Row, Col, Statistic, Table, Spin, Select, DatePicker, Typography } from 'antd';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrophyOutlined, BookOutlined, CheckCircleOutlined } from '@ant-design/icons';
