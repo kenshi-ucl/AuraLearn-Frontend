@@ -649,7 +649,7 @@ export default function FAQPage() {
                 <div className="space-y-3">
                   {(() => {
                     const allQuestions = Object.values(faqData)
-                      .flatMap(cat => cat.questions);
+                      .flatMap(cat => cat.questions) as Array<{id: number, question: string, answer: string, tags: string[], helpful: number, views: number}>;
                     return allQuestions
                       .sort((a, b) => b.views - a.views)
                       .slice(0, 5)
