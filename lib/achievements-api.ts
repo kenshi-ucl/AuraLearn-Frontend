@@ -68,7 +68,6 @@ async function request(endpoint: string, options: RequestInit = {}): Promise<any
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            ...(options.headers || {} as Record<string, string>),
         };
 
         if (token) {
@@ -77,7 +76,10 @@ async function request(endpoint: string, options: RequestInit = {}): Promise<any
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
-            headers,
+            headers: {
+                ...headers,
+                ...(options.headers as Record<string, string> || {}),
+            },
         });
 
         if (!response.ok) {
