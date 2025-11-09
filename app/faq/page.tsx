@@ -648,9 +648,12 @@ export default function FAQPage() {
                 </h3>
                 <div className="space-y-3">
                   {(() => {
-                    const allQuestions = Object.values(faqData)
-                      .flatMap(cat => cat.questions)
-                      .map(q => ({...q}));
+                    const allQuestions: Array<{id: number, question: string, answer: string, tags: string[], helpful: number, views: number}> = [];
+                    Object.values(faqData).forEach(cat => {
+                      cat.questions.forEach(q => {
+                        allQuestions.push({...q, tags: q.tags.slice()});
+                      });
+                    });
                     return allQuestions
                       .sort((a, b) => b.views - a.views)
                       .slice(0, 5)
