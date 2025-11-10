@@ -145,25 +145,25 @@ export default function TutorialSections() {
               <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
                 <div className="bg-[var(--surface)] rounded-2xl shadow-2xl overflow-hidden border border-[var(--border)]">
                   {/* Code Editor Header */}
-                  <div className="bg-gradient-to-r from-[var(--surface-active)] to-[var(--surface)] p-4 flex items-center justify-between">
+                  <div className="bg-gradient-to-r from-[var(--surface-active)] to-[var(--surface)] p-4 flex items-center justify-between border-b border-[var(--border)]">
                     <div className="flex items-center space-x-3">
                       <div className="flex space-x-2">
                         <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                         <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                       </div>
-                      <span className="text-white text-sm font-medium">{course.title} Example</span>
+                      <span className="text-[var(--text-primary)] text-sm font-medium">{course.title} Example</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className={`w-2 h-2 bg-gradient-to-r ${course.color} rounded-full`}></div>
-                      <span className="text-[#a0a0a0] text-xs">Live Editor</span>
+                      <span className="text-[var(--text-secondary)] text-xs">Live Editor</span>
                     </div>
                   </div>
 
                   {/* Code Content */}
                   <div className="bg-gradient-to-br from-[var(--code-bg)] to-[var(--surface-active)] p-6">
                     <pre className="text-sm overflow-x-auto">
-                      <code className="text-[#e0e0e0] font-mono leading-relaxed">
+                      <code className="text-[var(--text-primary)] font-mono leading-relaxed">
                         {course.codeExample}
                       </code>
                     </pre>
