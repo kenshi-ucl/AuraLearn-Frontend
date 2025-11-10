@@ -14,6 +14,9 @@ interface TopicRendererProps {
 const renderTopicContent = (topic: Topic) => {
   const { content, content_type } = topic;
   
+  // Get API base URL from environment variable
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'http://localhost:8000';
+  
   // Convert relative paths to absolute URLs with fallback options
   const getFullUrl = (path: string) => {
     console.log('Original path:', path);
@@ -25,11 +28,11 @@ const renderTopicContent = (topic: Topic) => {
     
     let fullUrl;
     if (path.startsWith('/storage/')) {
-      fullUrl = `http://localhost:8000${path}`;
+      fullUrl = `${API_BASE}${path}`;
     } else if (path.startsWith('storage/')) {
-      fullUrl = `http://localhost:8000/${path}`;
+      fullUrl = `${API_BASE}/${path}`;
     } else {
-      fullUrl = `http://localhost:8000/storage/${path}`;
+      fullUrl = `${API_BASE}/storage/${path}`;
     }
     
     console.log('Generated full URL:', fullUrl);
@@ -39,7 +42,7 @@ const renderTopicContent = (topic: Topic) => {
   // Generate fallback URL using our API route
   const getFallbackUrl = (path: string) => {
     const cleanPath = path.replace(/^\/storage\//, '').replace(/^storage\//, '');
-    return `http://localhost:8000/api/admin/upload/serve-file/${encodeURIComponent(cleanPath)}`;
+    return `${API_BASE}/api/admin/upload/serve-file/${encodeURIComponent(cleanPath)}`;
   };
 
   switch (content_type) {

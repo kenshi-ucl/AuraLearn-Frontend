@@ -54,7 +54,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       formData.append('image', file);
       formData.append('type', 'topic_image');
 
-      const response = await fetch('http://localhost:8000/api/test-upload/image', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE}/api/test-upload/image`, {
         method: 'POST',
         body: formData,
         mode: 'cors',

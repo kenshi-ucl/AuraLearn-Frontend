@@ -27,6 +27,9 @@ import {
   Collapse
 } from "antd";
 import type { TabsProps } from "antd";
+
+// Get API base URL from environment variable
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'http://localhost:8000';
 import { 
   PlusOutlined, 
   EditOutlined, 
@@ -514,7 +517,7 @@ export default function AdminLessonsPage() {
                                 {topic.content_type === 'image' && (
                                   <div style={{ marginBottom: 8 }}>
                                     <img 
-                                      src={topic.content.startsWith('http') ? topic.content : `http://localhost:8000${topic.content.startsWith('/storage/') ? topic.content : '/storage/' + topic.content}`}
+                                      src={topic.content.startsWith('http') ? topic.content : `${API_BASE}${topic.content.startsWith('/storage/') ? topic.content : '/storage/' + topic.content}`}
                                       alt={topic.title}
                                       style={{ 
                                         maxWidth: 200, 
@@ -532,7 +535,7 @@ export default function AdminLessonsPage() {
                                 {topic.content_type === 'video' && (
                                   <div style={{ marginBottom: 8 }}>
                                     <video 
-                                      src={topic.content.startsWith('http') ? topic.content : `http://localhost:8000${topic.content.startsWith('/storage/') ? topic.content : '/storage/' + topic.content}`}
+                                      src={topic.content.startsWith('http') ? topic.content : `${API_BASE}${topic.content.startsWith('/storage/') ? topic.content : '/storage/' + topic.content}`}
                                       style={{ 
                                         maxWidth: 200, 
                                         maxHeight: 120, 

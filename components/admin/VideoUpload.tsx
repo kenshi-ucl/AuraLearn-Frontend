@@ -56,7 +56,8 @@ const VideoUpload: React.FC<VideoUploadProps> = ({
       formData.append('video', file);
       formData.append('type', 'topic_video');
 
-      const response = await fetch('http://localhost:8000/api/test-upload/video', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE}/api/test-upload/video`, {
         method: 'POST',
         body: formData,
         mode: 'cors',

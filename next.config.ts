@@ -1,14 +1,23 @@
 import type { NextConfig } from "next";
 
+// Get backend URL from environment variable, default to localhost for development
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_USER_API_BASE || 'http://localhost:8000';
+
 const nextConfig: NextConfig = {
 	async rewrites() {
-		return [
-			// Proxy API calls to Laravel backend
-			{
-				source: '/api/:path*',
-				destination: 'http://localhost:8000/api/:path*',
-			},
-		];
+		// Only use rewrites in development (when API_BASE_URL is localhost)
+		// In production, the frontend will call the backend directly using NEXT_PUBLIC_* env vars
+		if (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1')) {
+			return [
+				// Proxy API calls to Laravel backend (development only)
+				{
+					source: '/api/:path*',
+					destination: `${API_BASE_URL}/api/:path*`,
+				},
+			];
+		}
+		// In production, return empty array (no rewrites needed - direct API calls)
+		return [];
 	},
 	eslint: {
 		ignoreDuringBuilds: true,
