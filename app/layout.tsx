@@ -40,8 +40,7 @@ export default function RootLayout({
             __html: `
             // Apply theme before React hydration to prevent flash
             (function() {
-              const theme = localStorage.getItem('theme') || 
-                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+              const theme = localStorage.getItem('theme') || 'light'; // Default to light mode
               document.documentElement.setAttribute('data-theme', theme);
               if (theme === 'dark') {
                 document.documentElement.classList.add('dark');

@@ -26,10 +26,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(savedTheme)
       document.documentElement.setAttribute('data-theme', savedTheme)
     } else {
-      // Check system preference if no saved theme
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-      setTheme(systemTheme)
-      document.documentElement.setAttribute('data-theme', systemTheme)
+      // Default to light theme if no saved theme
+      setTheme('light')
+      document.documentElement.setAttribute('data-theme', 'light')
     }
   }, [])
 
