@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Target, Code, ExternalLink } from 'lucide-react'
+import { Target, Code, ExternalLink, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 
@@ -18,12 +18,12 @@ interface Activity {
 
 interface ActivityContainerProps {
   activity: Activity
+  isCompleted?: boolean
   onComplete?: (activityId: string) => void
 }
 
-export default function ActivityContainer({ activity, onComplete }: ActivityContainerProps) {
+export default function ActivityContainer({ activity, isCompleted = false, onComplete }: ActivityContainerProps) {
   const router = useRouter()
-  const [isCompleted, setIsCompleted] = useState(false)
 
   const enterActivity = () => {
     // Navigate to the full-screen activity editor
@@ -31,22 +31,42 @@ export default function ActivityContainer({ activity, onComplete }: ActivityCont
   }
 
   return (
-    <div className="w-full bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg overflow-hidden">
+    <div className={`w-full border-2 rounded-lg overflow-hidden ${
+      isCompleted 
+        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300' 
+        : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
+    }`}>
       {/* Activity Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
-        <div className="flex items-center space-x-3">
-          <Target className="h-6 w-6" />
-          <div>
-            <h3 className="text-lg font-semibold">Activity: {activity.title}</h3>
-            <p className="text-purple-100 text-sm">{activity.description}</p>
+      <div className={`text-white px-6 py-4 ${
+        isCompleted
+          ? 'bg-gradient-to-r from-green-600 to-emerald-600'
+          : 'bg-gradient-to-r from-purple-600 to-pink-600'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {isCompleted ? (
+              <CheckCircle className="h-6 w-6" />
+            ) : (
+              <Target className="h-6 w-6" />
+            )}
+            <div>
+              <h3 className="text-lg font-semibold">Activity: {activity.title}</h3>
+              <p className={`text-sm ${isCompleted ? 'text-green-100' : 'text-purple-100'}`}>{activity.description}</p>
+            </div>
           </div>
+          {isCompleted && (
+            <div className="flex items-center space-x-2 bg-white/20 rounded-full px-4 py-2">
+              <CheckCircle className="h-5 w-5" />
+              <span className="font-semibold">Completed</span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Activity Instructions */}
       <div className="p-6">
         <div className="mb-6">
-          <h4 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
+          <h4 className="text-lg font-medium text-[var(--text-primary)] mb-3 flex items-center">
             <Code className="h-5 w-5 mr-2 text-purple-600" />
             Instructions
           </h4>
@@ -56,23 +76,38 @@ export default function ActivityContainer({ activity, onComplete }: ActivityCont
                 <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-semibold">
                   {index + 1}
                 </span>
-                <span className="text-gray-700">{instruction}</span>
+                <span className="text-[var(--text-primary)]">{instruction}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-purple-200">
-          <div className="text-sm text-gray-600 flex items-center">
-            <ExternalLink className="h-4 w-4 mr-2 text-purple-500" />
-            <span className="font-medium">Opens in full-screen editor</span>
+        <div className={`flex items-center justify-between pt-4 border-t ${
+          isCompleted ? 'border-green-200' : 'border-purple-200'
+        }`}>
+          <div className="text-sm text-[var(--text-secondary)] flex items-center">
+            <ExternalLink className={`h-4 w-4 mr-2 ${isCompleted ? 'text-green-500' : 'text-purple-500'}`} />
+            <span className="font-medium">{isCompleted ? 'Activity completed' : 'Opens in full-screen editor'}</span>
           </div>
           <Button
             onClick={enterActivity}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-2"
+            className={`font-semibold px-6 py-2 ${
+              isCompleted
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
+                : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+            }`}
           >
-            <Target className="h-4 w-4 mr-2" />
-            Enter Activity
+            {isCompleted ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Completed
+              </>
+            ) : (
+              <>
+                <Target className="h-4 w-4 mr-2" />
+                Enter Activity
+              </>
+            )}
           </Button>
         </div>
       </div>

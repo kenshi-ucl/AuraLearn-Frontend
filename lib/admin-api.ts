@@ -1,7 +1,11 @@
-export const ADMIN_API_BASE = process.env.NEXT_PUBLIC_ADMIN_API_BASE || "http://localhost:8000";
+// Always use relative URLs - Next.js will proxy to the backend
+// This works in both development (localhost) and production (Vercel)
+// The Next.js rewrites handle the proxying automatically
+export const ADMIN_API_BASE = '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-	const res = await fetch(`${ADMIN_API_BASE}${path}`, {
+	// Use relative URL - Next.js proxy will forward to backend
+	const res = await fetch(path, {
 		credentials: "include",
 		...init,
 		headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },

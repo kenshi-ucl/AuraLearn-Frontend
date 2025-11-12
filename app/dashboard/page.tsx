@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { redirect } from 'next/navigation';
 import { getDashboardStats, type DashboardStats } from '@/lib/dashboard-api';
@@ -18,7 +18,8 @@ import {
   Users,
   CheckCircle,
   PlayCircle,
-  ArrowUpRight
+  ArrowUpRight,
+  RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,29 +27,60 @@ export default function DashboardPage() {
   const { user, isAuthenticated, loading } = useAuth();
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      loadDashboardData();
-    }
-  }, [loading, isAuthenticated]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async (showRefreshing = false) => {
     try {
-      setIsLoadingData(true);
+      if (showRefreshing) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoadingData(true);
+      }
+      
       const data = await getDashboardStats();
       setDashboardData(data);
+      setLastUpdated(new Date());
+      console.log('✅ Dashboard data loaded successfully');
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
       setIsLoadingData(false);
+      setIsRefreshing(false);
     }
+  }, []);
+
+  // Load dashboard data on mount
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      loadDashboardData();
+    }
+  }, [loading, isAuthenticated, loadDashboardData]);
+
+  // Auto-refresh every 30 seconds when page is active
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const autoRefreshInterval = setInterval(() => {
+      if (!document.hidden) {
+        console.log('🔄 Auto-refreshing dashboard...');
+        loadDashboardData(true);
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(autoRefreshInterval);
+  }, [isAuthenticated, loadDashboardData]);
+
+  // Manual refresh handler
+  const handleRefresh = () => {
+    console.log('🔄 Manual refresh triggered');
+    loadDashboardData(true);
   };
 
   if (loading || isLoadingData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500"></div>
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[var(--brand-primary)]"></div>
       </div>
     );
   }
@@ -96,38 +128,53 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-[var(--text-primary)]">
                 Welcome back, {user.fullName.split(' ')[0]}! 👋
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-[var(--text-secondary)] mt-1">
                 Here's your learning progress overview
+                {lastUpdated && (
+                  <span className="ml-2 text-xs text-[var(--text-tertiary)]">
+                    • Updated {lastUpdated.toLocaleTimeString()}
+                  </span>
+                )}
               </p>
             </div>
-            <Link
-              href="/html"
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 flex items-center"
-            >
-              Continue Learning
-              <ArrowUpRight className="h-4 w-4 ml-2" />
-            </Link>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] px-4 py-3 rounded-lg font-semibold hover:bg-[var(--surface-hover)] transition-all duration-200 flex items-center disabled:opacity-50"
+                title="Refresh Dashboard"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
+              <Link
+                href="/html"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 flex items-center"
+              >
+                Continue Learning
+                <ArrowUpRight className="h-4 w-4 ml-2" />
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div key={index} className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                  <p className="text-sm text-gray-500 mt-1">{stat.change}</p>
+                  <p className="text-sm font-medium text-[var(--text-secondary)]">{stat.label}</p>
+                  <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">{stat.value}</p>
+                  <p className="text-sm text-[var(--text-tertiary)] mt-1">{stat.change}</p>
                 </div>
                 <div className={`bg-${stat.color}-100 p-3 rounded-lg`}>
                   {stat.icon}
@@ -141,19 +188,19 @@ export default function DashboardPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Progress Overview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Learning Progress</h2>
-                <BarChart3 className="h-5 w-5 text-gray-400" />
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">Learning Progress</h2>
+                <BarChart3 className="h-5 w-5 text-[var(--text-tertiary)]" />
               </div>
               
               {/* Overall Progress */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Overall Course Progress</span>
+                  <span className="text-sm font-medium text-[var(--text-secondary)]">Overall Course Progress</span>
                   <span className="text-sm font-semibold text-purple-600">{progressPercentage}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
+                <div className="w-full bg-[var(--surface-hover)] rounded-full h-3">
                   <div 
                     className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercentage}%` }}
@@ -164,10 +211,10 @@ export default function DashboardPage() {
               {/* Weekly Goal */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Weekly Learning Goal</span>
+                  <span className="text-sm font-medium text-[var(--text-secondary)]">Weekly Learning Goal</span>
                   <span className="text-sm font-semibold text-blue-600">{weeklyProgress}/{weeklyGoal} days</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
+                <div className="w-full bg-[var(--surface-hover)] rounded-full h-3">
                   <div 
                     className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${(weeklyProgress / weeklyGoal) * 100}%` }}
@@ -177,16 +224,16 @@ export default function DashboardPage() {
 
               {/* Current Course */}
               {dashboardData.currentCourse && (
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+                <div className="bg-[var(--brand-primary-light)] rounded-lg p-4 border border-[var(--brand-primary)]/20">
                   <div className="flex items-center space-x-3">
-                    <PlayCircle className="h-8 w-8 text-purple-500" />
+                    <PlayCircle className="h-8 w-8 text-[var(--brand-primary)]" />
                     <div>
-                      <h3 className="font-semibold text-gray-900">{dashboardData.currentCourse}</h3>
-                      <p className="text-sm text-gray-600">Continue your current lesson</p>
+                      <h3 className="font-semibold text-[var(--text-primary)]">{dashboardData.currentCourse}</h3>
+                      <p className="text-sm text-[var(--text-secondary)]">Continue your current lesson</p>
                     </div>
                     <Link
                       href="/html"
-                      className="ml-auto bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors"
+                      className="ml-auto bg-[var(--brand-primary)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--brand-primary-hover)] transition-colors"
                     >
                       Continue
                     </Link>
@@ -196,42 +243,42 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Recent Lessons</h2>
-                <Clock className="h-5 w-5 text-gray-400" />
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">Recent Lessons</h2>
+                <Clock className="h-5 w-5 text-[var(--text-tertiary)]" />
               </div>
               
               <div className="space-y-4">
                 {dashboardData.recentLessons.length > 0 ? (
                   dashboardData.recentLessons.map((lesson, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex items-center space-x-4 p-4 bg-[var(--surface-hover)] rounded-lg">
                       <div className="flex-shrink-0">
                         {lesson.progress === 100 ? (
-                          <CheckCircle className="h-8 w-8 text-green-500" />
+                          <CheckCircle className="h-8 w-8 text-[var(--accent-success)]" />
                         ) : (
                           <PlayCircle className="h-8 w-8 text-blue-500" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{lesson.title}</h3>
-                        <p className="text-sm text-gray-500">Last accessed: {new Date(lesson.lastAccessed).toLocaleDateString()}</p>
+                        <h3 className="font-medium text-[var(--text-primary)] truncate">{lesson.title}</h3>
+                        <p className="text-sm text-[var(--text-tertiary)]">Last accessed: {new Date(lesson.lastAccessed).toLocaleDateString()}</p>
                         <div className="flex items-center space-x-2 mt-2">
-                          <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-xs">
+                          <div className="flex-1 bg-[var(--border)] rounded-full h-2 max-w-xs">
                             <div 
                               className={`h-2 rounded-full transition-all duration-300 ${
-                                lesson.progress === 100 ? 'bg-green-500' : 'bg-blue-500'
+                                lesson.progress === 100 ? 'bg-[var(--accent-success)]' : 'bg-blue-500'
                               }`}
                               style={{ width: `${lesson.progress}%` }}
                             />
                           </div>
-                          <span className="text-xs font-medium text-gray-600">{lesson.progress}%</span>
+                          <span className="text-xs font-medium text-[var(--text-secondary)]">{lesson.progress}%</span>
                         </div>
                       </div>
                       <div className="flex-shrink-0">
                         <Link
                           href="/html"
-                          className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                          className="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] text-sm font-medium"
                         >
                           {lesson.progress === 100 ? 'Review' : 'Continue'}
                         </Link>
@@ -239,8 +286,8 @@ export default function DashboardPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <BookOpen className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                  <div className="text-center py-8 text-[var(--text-tertiary)]">
+                    <BookOpen className="h-12 w-12 mx-auto mb-2 text-[var(--text-disabled)]" />
                     <p>No recent lessons yet. Start learning now!</p>
                   </div>
                 )}
@@ -251,33 +298,33 @@ export default function DashboardPage() {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Quick Stats */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Quick Stats</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Time spent learning</span>
-                  <span className="text-sm font-semibold text-gray-900">{dashboardData.timeSpent}</span>
+                  <span className="text-sm text-[var(--text-secondary)]">Time spent learning</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{dashboardData.timeSpent}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Lessons completed</span>
-                  <span className="text-sm font-semibold text-gray-900">{dashboardData.lessonsCompleted}</span>
+                  <span className="text-sm text-[var(--text-secondary)]">Lessons completed</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{dashboardData.lessonsCompleted}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Average score</span>
-                  <span className="text-sm font-semibold text-gray-900">{dashboardData.averageScore}%</span>
+                  <span className="text-sm text-[var(--text-secondary)]">Average score</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{dashboardData.averageScore}%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Projects completed</span>
-                  <span className="text-sm font-semibold text-gray-900">{dashboardData.projectsCompleted}</span>
+                  <span className="text-sm text-[var(--text-secondary)]">Activities completed</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{dashboardData.projectsCompleted}</span>
                 </div>
               </div>
             </div>
 
             {/* Achievements */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Latest Badges</h3>
-                <Link href="/achievements" className="text-purple-600 hover:text-purple-700 text-sm font-medium">
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">Latest Badges</h3>
+                <Link href="/achievements" className="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] text-sm font-medium">
                   View All
                 </Link>
               </div>
@@ -288,8 +335,8 @@ export default function DashboardPage() {
                       <Award className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 text-sm">{badge}</p>
-                      <p className="text-xs text-gray-500">Earned recently</p>
+                      <p className="font-medium text-[var(--text-primary)] text-sm">{badge}</p>
+                      <p className="text-xs text-[var(--text-tertiary)]">Earned recently</p>
                     </div>
                   </div>
                 ))}
@@ -303,14 +350,10 @@ export default function DashboardPage() {
                 You're doing great! Try these recommended topics to expand your skills.
               </p>
               <div className="space-y-2">
-                <Link href="/css" className="block bg-white/10 hover:bg-white/20 rounded-lg p-3 transition-colors">
-                  <p className="font-medium text-sm">Advanced CSS Grid</p>
-                  <p className="text-xs text-white/80">Master modern layouts</p>
-                </Link>
-                <Link href="/javascript" className="block bg-white/10 hover:bg-white/20 rounded-lg p-3 transition-colors">
-                  <p className="font-medium text-sm">JavaScript ES6+</p>
-                  <p className="text-xs text-white/80">Modern JavaScript features</p>
-                </Link>
+              <p className="text-sm text-white/90 mb-4">
+                LEARN HTML5 by AuraLearn!
+              </p>
+
               </div>
             </div>
           </div>

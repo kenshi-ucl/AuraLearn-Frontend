@@ -7,8 +7,16 @@ import CodeExecutor from '@/components/code-executor'
 import ActivityContainer from '@/components/activity-container'
 import TopicRenderer from '@/components/topic-renderer'
 import { Code2 } from 'lucide-react'
-import { getCourseBySlug, formatActivityForUI, type Course, type Lesson, type Activity, type UIActivity } from '@/lib/course-api'
+import { getCourseBySlug, formatActivityForUI, markLessonComplete, type Course, type Lesson, type Activity, type UIActivity } from '@/lib/course-api'
+import { getLessonProgress } from '@/lib/progress-api'
 import { Spin, Alert } from 'antd'
+import { useLessonTracker } from '@/hooks/use-lesson-tracker'
+
+interface LessonCompletionStatus {
+  lessonId: number
+  isCompleted: boolean
+  percentage: number
+}
 
 export default function HTMLTutorial() {
   const [course, setCourse] = useState<Course | null>(null)
@@ -17,6 +25,42 @@ export default function HTMLTutorial() {
   const [activities, setActivities] = useState<UIActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [completedActivities, setCompletedActivities] = useState<Set<string>>(new Set())
+  const [lessonCompletionData, setLessonCompletionData] = useState<Map<number, LessonCompletionStatus>>(new Map())
+
+  // Fetch lesson completion status for all lessons
+  const fetchAllLessonCompletions = async (courseId: number, lessonsList: Lesson[]) => {
+    const completionMap = new Map<number, LessonCompletionStatus>()
+    
+    for (const lesson of lessonsList) {
+      try {
+        const progress = await getLessonProgress(courseId, lesson.id)
+        if (progress) {
+          completionMap.set(lesson.id, {
+            lessonId: lesson.id,
+            isCompleted: progress.is_completed,
+            percentage: progress.completion_percentage
+          })
+        } else {
+          completionMap.set(lesson.id, {
+            lessonId: lesson.id,
+            isCompleted: false,
+            percentage: 0
+          })
+        }
+      } catch (err) {
+        console.warn(`Failed to fetch progress for lesson ${lesson.id}:`, err)
+        completionMap.set(lesson.id, {
+          lessonId: lesson.id,
+          isCompleted: false,
+          percentage: 0
+        })
+      }
+    }
+    
+    setLessonCompletionData(completionMap)
+    console.log('📊 Loaded lesson completion data:', completionMap)
+  }
 
   useEffect(() => {
     const loadCourseData = async () => {
@@ -34,11 +78,30 @@ export default function HTMLTutorial() {
           const firstLesson = response.course.lessons[0]
           setCurrentLesson(firstLesson)
           
+          // Fetch completion status for all lessons
+          await fetchAllLessonCompletions(response.course.id, response.course.lessons)
           
-          // Convert backend activities to UI format
+          // Convert backend activities to UI format and check completion status
           if (firstLesson.activities && firstLesson.activities.length > 0) {
             const uiActivities = firstLesson.activities.map(formatActivityForUI)
             setActivities(uiActivities)
+            
+            // Check completion status for each activity from backend
+            const completed = new Set<string>()
+            for (const activity of uiActivities) {
+              try {
+                const { getActivitySubmissionStatus } = await import('@/lib/course-api')
+                const status = await getActivitySubmissionStatus(activity.id)
+                if (status.is_completed) {
+                  completed.add(activity.id.toString())
+                  console.log(`✅ Activity ${activity.id} is completed`)
+                }
+              } catch (err) {
+                console.warn(`Failed to check status for activity ${activity.id}`)
+              }
+            }
+            setCompletedActivities(completed)
+            console.log('📥 Loaded completed activities from backend:', Array.from(completed))
           }
         }
       } catch (err) {
@@ -52,9 +115,70 @@ export default function HTMLTutorial() {
     loadCourseData()
   }, [])
 
-  const handleActivityComplete = (activityId: string) => {
-    console.log(`Activity ${activityId} completed!`)
-    // Here you could save progress to localStorage or send to backend
+  // Track lesson progress automatically
+  const { timeSpent, progressPercentage, formatTime, markTopicComplete } = useLessonTracker({
+    courseId: course?.id || 0,
+    lessonId: currentLesson?.id || 0,
+    totalTopics: (currentLesson?.topics?.length || 0) + activities.length,
+    onProgressUpdate: (percentage) => {
+      console.log('📊 Lesson progress updated:', percentage);
+      
+      // If lesson is 100% complete, mark it as complete in backend
+      if (percentage >= 100 && course?.id && currentLesson?.id) {
+        markLessonComplete(course.id, currentLesson.id)
+          .then(() => {
+            console.log('✅ Lesson marked as complete in backend!');
+          })
+          .catch((err) => {
+            console.error('Failed to mark lesson complete:', err);
+          });
+      }
+    }
+  });
+
+  const handleActivityComplete = async (activityId: string) => {
+    console.log(`✅ Activity ${activityId} completed!`)
+    
+    // Track this activity as completed  
+    const newCompletedActivities = new Set([...completedActivities, activityId])
+    setCompletedActivities(newCompletedActivities);
+    
+    // Calculate overall lesson progress
+    const totalItems = (currentLesson?.topics?.length || 0) + activities.length;
+    const completedItems = newCompletedActivities.size;
+    
+    if (totalItems > 0) {
+      const percentage = Math.round((completedItems / totalItems) * 100);
+      console.log(`📈 Progress: ${completedItems}/${totalItems} = ${percentage}%`);
+      
+      // This will also trigger markLessonComplete if at 100%
+      if (percentage >= 100) {
+        markTopicComplete(totalItems - 1);
+      }
+    }
+    
+    // Fetch updated lesson progress from backend
+    if (course?.id && currentLesson?.id) {
+      try {
+        const progress = await getLessonProgress(course.id, currentLesson.id)
+        if (progress) {
+          console.log('📊 Updated lesson progress from backend:', progress)
+          
+          // Update completion data map
+          setLessonCompletionData(prev => {
+            const newMap = new Map(prev)
+            newMap.set(currentLesson.id, {
+              lessonId: currentLesson.id,
+              isCompleted: progress.is_completed,
+              percentage: progress.completion_percentage
+            })
+            return newMap
+          })
+        }
+      } catch (err) {
+        console.warn('Failed to fetch updated lesson progress:', err)
+      }
+    }
   }
 
   // Get current lesson index
@@ -63,11 +187,31 @@ export default function HTMLTutorial() {
   }
 
   // Navigation handlers
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (!currentLesson || !course) return
+    
+    // Check if current lesson is completed
+    const currentCompletion = lessonCompletionData.get(currentLesson.id)
+    
+    if (!currentCompletion || currentCompletion.percentage < 100) {
+      // Fetch fresh data from backend to be sure
+      try {
+        const progress = await getLessonProgress(course.id, currentLesson.id)
+        if (!progress || progress.completion_percentage < 100) {
+          alert('⚠️ Please complete all activities in this lesson before proceeding to the next one!')
+          return
+        }
+      } catch (err) {
+        alert('⚠️ Please complete all activities in this lesson before proceeding!')
+        return
+      }
+    }
+    
     const currentIndex = lessons.findIndex(lesson => lesson.id === currentLesson?.id)
     if (currentIndex < lessons.length - 1) {
       const nextLesson = lessons[currentIndex + 1]
       setCurrentLesson(nextLesson)
+      setCompletedActivities(new Set()) // Reset for new lesson
       
       // Load activities for the next lesson
       if (nextLesson.activities && nextLesson.activities.length > 0) {
@@ -76,6 +220,8 @@ export default function HTMLTutorial() {
       } else {
         setActivities([])
       }
+      
+      console.log('➡️ Moved to next lesson:', nextLesson.title);
     }
   }
 
@@ -84,6 +230,7 @@ export default function HTMLTutorial() {
     if (currentIndex > 0) {
       const prevLesson = lessons[currentIndex - 1]
       setCurrentLesson(prevLesson)
+      setCompletedActivities(new Set()) // Reset for new lesson
       
       // Load activities for the previous lesson
       if (prevLesson.activities && prevLesson.activities.length > 0) {
@@ -92,18 +239,20 @@ export default function HTMLTutorial() {
       } else {
         setActivities([])
       }
+      
+      console.log('⬅️ Moved to previous lesson:', prevLesson.title);
     }
   }
 
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <Spin size="large" />
-            <p className="mt-4 text-gray-600">Loading course content...</p>
+            <p className="mt-4 text-[var(--text-secondary)]">Loading course content...</p>
           </div>
         </div>
       </div>
@@ -331,7 +480,7 @@ export default function HTMLTutorial() {
     const fallbackActivity = getLessonActivity(fallbackCurrentIndex)
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Alert
@@ -353,14 +502,14 @@ export default function HTMLTutorial() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
               <div className="space-y-12">
-                <div className="bg-white rounded-2xl p-8 text-gray-900 border border-gray-200">
+                <div className="bg-[var(--surface)] rounded-2xl p-8 text-[var(--text-primary)] border border-[var(--border)]">
                   <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center border border-gray-200">
-                      <Code2 className="w-8 h-8 text-gray-700" />
+                    <div className="w-16 h-16 bg-[var(--surface-hover)] rounded-2xl flex items-center justify-center border border-[var(--border)]">
+                      <Code2 className="w-8 h-8 text-[var(--text-secondary)]" />
                     </div>
                     <div>
                     <h1 className="text-3xl md:text-4xl font-bold mb-2">{fallbackLessons[fallbackCurrentIndex]}</h1>
-                    <p className="text-gray-600 text-lg">
+                    <p className="text-[var(--text-secondary)] text-lg">
                       {fallbackCurrentIndex === 0 && "Learn what HTML is and why it's important for web development"}
                       {fallbackCurrentIndex === 1 && "Discover the best tools and editors for writing HTML code"}
                       {fallbackCurrentIndex === 2 && "Understand the basic structure that every HTML document needs"}
@@ -395,6 +544,16 @@ export default function HTMLTutorial() {
   const currentTopicTitle = currentLesson?.title || 'HTML Introduction'
   const currentIndex = getCurrentLessonIndex()
 
+  // Prepare lesson completion data for TutorialLayout
+  const lessonIds = lessons.map(lesson => lesson.id)
+  const lessonCompletionStatuses = lessons.map(lesson => {
+    const completion = lessonCompletionData.get(lesson.id)
+    return {
+      isCompleted: completion?.isCompleted || false,
+      percentage: completion?.percentage || 0
+    }
+  })
+
   // Get current lesson content and code examples
   const lessonContent = currentLesson?.content || '<h2>Welcome to HTML!</h2><p>Loading lesson content...</p>'
   
@@ -403,13 +562,15 @@ export default function HTMLTutorial() {
   const displayDescription = currentIndex === 0 ? (course.description || '') : (currentLesson?.description || '')
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <TutorialLayout
         title={displayTitle}
         description={displayDescription}
         currentTopic={currentTopicTitle}
         topics={topicTitles}
+        lessonIds={lessonIds}
+        lessonCompletionStatuses={lessonCompletionStatuses}
         onNext={handleNext}
         onPrevious={handlePrevious}
         showCourseInfo={currentIndex === 0}
@@ -430,22 +591,26 @@ export default function HTMLTutorial() {
 
               {/* Dynamic Activities Section */}
               <div className="space-y-12">
-                {activities.map((activity) => (
-                  <div key={activity.id} className="mt-8">
-                    <ActivityContainer
-                      activity={activity}
-                      onComplete={handleActivityComplete}
-                    />
-                  </div>
-                ))}
+                {activities.map((activity) => {
+                  const activityCompleted = completedActivities.has(activity.id.toString())
+                  return (
+                    <div key={activity.id} className="mt-8">
+                      <ActivityContainer
+                        activity={activity}
+                        isCompleted={activityCompleted}
+                        onComplete={handleActivityComplete}
+                      />
+                    </div>
+                  )
+                })}
               </div>
 
               {/* Fallback message if no content */}
               {!currentLesson?.content && (!currentLesson?.topics || currentLesson.topics.length === 0) && activities.length === 0 && (
-                <div className="bg-white rounded-2xl p-8 text-center border border-gray-200">
-                  <Code2 className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No Content Available</h3>
-                  <p className="text-gray-600">
+                <div className="bg-[var(--surface)] rounded-2xl p-8 text-center border border-[var(--border)]">
+                  <Code2 className="w-16 h-16 mx-auto text-[var(--text-disabled)] mb-4" />
+                  <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">No Content Available</h3>
+                  <p className="text-[var(--text-secondary)]">
                     This lesson doesn't have content yet. Please add content through the admin panel.
                   </p>
                 </div>

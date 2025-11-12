@@ -40,8 +40,8 @@ export default function ProfileEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500"></div>
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[var(--brand-primary)]"></div>
       </div>
     );
   }
@@ -114,7 +114,7 @@ export default function ProfileEditPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Success Message */}
       {successMessage && (
         <div className="fixed top-20 right-4 z-50 flex items-center space-x-2 bg-green-50 text-green-700 px-4 py-2 rounded-lg border border-green-200 shadow-lg">
@@ -127,7 +127,7 @@ export default function ProfileEditPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Overview */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6 sticky top-8">
               <div className="text-center">
                 <div className="relative inline-block">
                   {formData.avatar ? (
@@ -149,21 +149,21 @@ export default function ProfileEditPage() {
                   </button>
                 </div>
                 
-                <h2 className="text-xl font-semibold text-gray-900 mt-4">{formData.fullName}</h2>
-                <p className="text-gray-600">{formData.email}</p>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] mt-4">{formData.fullName}</h2>
+                <p className="text-[var(--text-secondary)]">{formData.email}</p>
                 
                 <div className="mt-6 grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-2xl font-bold text-purple-600">{user.progress.totalPoints}</div>
-                    <div className="text-xs text-gray-500">Points</div>
+                    <div className="text-xs text-[var(--text-tertiary)]">Points</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-orange-600">{user.progress.streak}</div>
-                    <div className="text-xs text-gray-500">Day Streak</div>
+                    <div className="text-xs text-[var(--text-tertiary)]">Day Streak</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-blue-600">{user.progress.rank}</div>
-                    <div className="text-xs text-gray-500">Rank</div>
+                    <div className="text-xs text-[var(--text-tertiary)]">Rank</div>
                   </div>
                 </div>
               </div>
@@ -173,9 +173,9 @@ export default function ProfileEditPage() {
           {/* Edit Forms */}
           <div className="lg:col-span-2 space-y-8">
             {/* Personal Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
+                <h3 className="text-xl font-semibold text-[var(--text-primary)]">Personal Information</h3>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
                   className="text-purple-600 hover:text-purple-700 text-sm font-medium"
@@ -187,31 +187,31 @@ export default function ProfileEditPage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Full Name</label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] h-5 w-5" />
                       <input
                         type="text"
                         name="fullName"
                         value={formData.fullName}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                        className="w-full pl-12 pr-4 py-3 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] disabled:bg-[var(--surface-hover)] disabled:text-[var(--text-tertiary)] text-[var(--text-primary)] bg-[var(--surface)]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Email Address</label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] h-5 w-5" />
                       <input
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                        className="w-full pl-12 pr-4 py-3 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] disabled:bg-[var(--surface-hover)] disabled:text-[var(--text-tertiary)] text-[var(--text-primary)] bg-[var(--surface)]"
                       />
                     </div>
                   </div>
@@ -219,7 +219,7 @@ export default function ProfileEditPage() {
 
                 {isEditing && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Choose Avatar</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Choose Avatar</label>
                     <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                       {avatarOptions.map((avatarUrl, index) => (
                         <button
@@ -228,7 +228,7 @@ export default function ProfileEditPage() {
                           className={`w-16 h-16 rounded-full overflow-hidden border-4 transition-all ${
                             formData.avatar === avatarUrl 
                               ? 'border-purple-500 ring-2 ring-purple-200' 
-                              : 'border-gray-200 hover:border-purple-300'
+                              : 'border-[var(--border)] hover:border-purple-300'
                           }`}
                         >
                           <img src={avatarUrl} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover" />
@@ -253,14 +253,14 @@ export default function ProfileEditPage() {
             </div>
 
             {/* Preferences */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-6">Preferences</h3>
               
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
                   <div className="relative">
-                    <Palette className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Palette className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] h-5 w-5" />
                     <select
                       name="theme"
                       value={formData.theme}
@@ -276,7 +276,7 @@ export default function ProfileEditPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
                   <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] h-5 w-5" />
                     <select
                       name="language"
                       value={formData.language}
@@ -294,10 +294,10 @@ export default function ProfileEditPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Bell className="h-5 w-5 text-gray-400" />
+                    <Bell className="h-5 w-5 text-[var(--text-tertiary)]" />
                     <div>
-                      <p className="font-medium text-gray-900">Email Notifications</p>
-                      <p className="text-sm text-gray-500">Receive updates about your progress</p>
+                      <p className="font-medium text-[var(--text-primary)]">Email Notifications</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Receive updates about your progress</p>
                     </div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -315,7 +315,7 @@ export default function ProfileEditPage() {
             </div>
 
             {/* Change Password */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-6">Change Password</h3>
               
               <div className="space-y-4">
@@ -343,7 +343,7 @@ export default function ProfileEditPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">New Password</label>
                     <input
                       type="password"
                       name="newPassword"
@@ -355,7 +355,7 @@ export default function ProfileEditPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Confirm Password</label>
                     <input
                       type="password"
                       name="confirmPassword"

@@ -1,7 +1,10 @@
-export const USER_API_BASE = process.env.NEXT_PUBLIC_USER_API_BASE || "http://localhost:8000";
+// Always use relative URLs - Next.js will proxy to the backend
+// This works in both development (localhost) and production (Vercel)
+export const USER_API_BASE = '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-	const res = await fetch(`${USER_API_BASE}${path}`, {
+	// Use relative URL - Next.js proxy will forward to backend
+	const res = await fetch(path, {
 		credentials: "include",
 		...init,
 		headers: { 

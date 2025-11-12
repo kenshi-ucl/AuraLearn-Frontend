@@ -18,7 +18,7 @@ Write-Host "⚠️  IMPORTANT: You need to set environment variables in Vercel d
 Write-Host ""
 Write-Host "   1. Go to: https://vercel.com/dashboard" -ForegroundColor Cyan
 Write-Host "   2. Click on your project: capstone-app" -ForegroundColor Cyan
-Write-Host "   3. Go to: Settings → Environment Variables" -ForegroundColor Cyan
+Write-Host "   3. Go to: Settings -> Environment Variables" -ForegroundColor Cyan
 Write-Host "   4. Add these 4 variables:" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "      NEXT_PUBLIC_API_BASE=https://limitless-caverns-03788-f84f5932a44c.herokuapp.com" -ForegroundColor White

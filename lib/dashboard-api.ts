@@ -1,5 +1,6 @@
-// API Base URL for backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+// Use relative URLs - Next.js proxy will forward to backend
+// This ensures cookies work properly and avoids CORS issues
+const API_BASE_URL = '';
 
 // Dashboard statistics interface
 export interface DashboardStats {
@@ -23,7 +24,7 @@ export interface DashboardStats {
     badges: string[];
 }
 
-// Helper function to make API requests
+// Helper function to make API requests with credentials
 async function request(endpoint: string, options: RequestInit = {}): Promise<any> {
     try {
         const headers: HeadersInit = {
@@ -33,6 +34,7 @@ async function request(endpoint: string, options: RequestInit = {}): Promise<any
         };
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            credentials: 'include', // Include cookies for session management
             ...options,
             headers,
         });

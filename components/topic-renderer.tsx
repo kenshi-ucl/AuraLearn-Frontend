@@ -14,35 +14,60 @@ interface TopicRendererProps {
 const renderTopicContent = (topic: Topic) => {
   const { content, content_type } = topic;
   
-  // Get API base URL from environment variable
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'http://localhost:8000';
-  
-  // Convert relative paths to absolute URLs with fallback options
+  // Convert paths to relative URLs that will be proxied by Next.js
   const getFullUrl = (path: string) => {
     console.log('Original path:', path);
     
+    // Strip localhost URLs - these were saved when uploading locally
+    // Convert them to relative URLs that will be proxied
+    if (path.includes('localhost:8000')) {
+      let storagePath = path.split('localhost:8000')[1]; // Get everything after localhost:8000
+      storagePath = storagePath.replace(/^\/+/, '/'); // Remove multiple leading slashes
+      console.log('Converted localhost URL to relative:', storagePath);
+      return storagePath;
+    }
+    
+    // If it's a full Heroku URL, convert to relative path
+    if (path.includes('.herokuapp.com')) {
+      let storagePath = path.split('.herokuapp.com')[1]; // Get path after domain
+      storagePath = storagePath.replace(/^\/+/, '/'); // Remove multiple leading slashes
+      console.log('Converted Heroku URL to relative:', storagePath);
+      return storagePath;
+    }
+    
+    // If it's any other full URL (external), return as-is
     if (path.startsWith('http')) {
-      console.log('Already full URL:', path);
+      console.log('External URL, using as-is:', path);
       return path;
     }
     
-    let fullUrl;
+    // Convert to relative URL for Next.js proxy
+    let relativePath;
     if (path.startsWith('/storage/')) {
-      fullUrl = `${API_BASE}${path}`;
+      relativePath = path; // Already has /storage/
     } else if (path.startsWith('storage/')) {
-      fullUrl = `${API_BASE}/${path}`;
+      relativePath = `/${path}`; // Add leading slash
     } else {
-      fullUrl = `${API_BASE}/storage/${path}`;
+      relativePath = `/storage/${path}`; // Add /storage/ prefix
     }
     
-    console.log('Generated full URL:', fullUrl);
-    return fullUrl;
+    console.log('Generated relative URL:', relativePath);
+    return relativePath;
   };
 
-  // Generate fallback URL using our API route
+  // Generate fallback URL using our API serve-file route
   const getFallbackUrl = (path: string) => {
-    const cleanPath = path.replace(/^\/storage\//, '').replace(/^storage\//, '');
-    return `${API_BASE}/api/admin/upload/serve-file/${encodeURIComponent(cleanPath)}`;
+    // Strip localhost or Heroku URLs first
+    let cleanedPath = path;
+    if (path.includes('localhost:8000')) {
+      cleanedPath = path.split('localhost:8000')[1];
+    } else if (path.includes('.herokuapp.com')) {
+      cleanedPath = path.split('.herokuapp.com')[1];
+    }
+    
+    // Remove /storage/ prefix for the serve-file route
+    const cleanPath = cleanedPath.replace(/^\/storage\//, '').replace(/^storage\//, '');
+    return `/api/admin/upload/serve-file/${encodeURIComponent(cleanPath)}`;
   };
 
   switch (content_type) {
@@ -52,7 +77,7 @@ const renderTopicContent = (topic: Topic) => {
           <img 
             src={getFullUrl(content)} 
             alt={topic.title}
-            className="max-w-full h-auto rounded-lg shadow-lg border border-gray-200"
+            className="max-w-full h-auto rounded-lg shadow-lg border border-[var(--border)]"
             style={{ maxHeight: '500px' }}
             onLoad={() => {
               console.log('✅ Image loaded successfully:', getFullUrl(content));
@@ -87,7 +112,7 @@ const renderTopicContent = (topic: Topic) => {
           <video 
             src={getFullUrl(content)} 
             controls
-            className="max-w-full h-auto rounded-lg shadow-lg border border-gray-200"
+            className="max-w-full h-auto rounded-lg shadow-lg border border-[var(--border)]"
             style={{ maxHeight: '400px' }}
             onError={(e) => {
               const currentSrc = e.currentTarget.src;
@@ -133,14 +158,14 @@ const TopicRenderer: React.FC<TopicRendererProps> = ({ topics, className = '' })
         <div key={topic.id} className="space-y-8">
           
           {/* Lesson Content Section */}
-          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+          <div className="bg-[var(--surface)] rounded-2xl p-8 border border-[var(--border)] shadow-sm">
             {/* Topic Header */}
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">
+                <h3 className="text-2xl font-bold text-[var(--text-primary)]">
                   {topicIndex + 1}. {topic.title}
                 </h3>
               </div>
@@ -148,7 +173,7 @@ const TopicRenderer: React.FC<TopicRendererProps> = ({ topics, className = '' })
 
             {/* Topic Content */}
             {topic.content && (
-              <div className="prose max-w-none text-gray-700 leading-relaxed">
+              <div className="prose max-w-none text-[var(--text-primary)] leading-relaxed">
                 {renderTopicContent(topic)}
               </div>
             )}
@@ -171,7 +196,7 @@ const TopicRenderer: React.FC<TopicRendererProps> = ({ topics, className = '' })
                         <Code2 className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h4 className="text-lg font-italic text-gray-900">
+                        <h4 className="text-lg font-italic text-[var(--text-primary)]">
                           {codeExample.title && codeExample.description ? `${codeExample.title}: ${codeExample.description}` : codeExample.title || `Example ${exampleIndex + 1}`}
                         </h4>
                       </div>

@@ -1,14 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import SignInForm from '@/components/auth/signin-form';
 import SignUpForm from '@/components/auth/signup-form';
 import Link from 'next/link';
 import { ArrowLeft, Code, Globe, Palette, Zap } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function SignInPage() {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, loading, router]);
 
   const slides = [
     {
@@ -49,6 +60,23 @@ export default function SignInPage() {
 
     return () => clearInterval(interval);
   }, [slides.length]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-[var(--text-secondary)]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render signin form if user is authenticated (will redirect)
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -112,12 +140,12 @@ export default function SignInPage() {
       </div>
 
       {/* Right Column - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 relative">
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-[var(--background)] relative">
         {/* Back to Home Link */}
         <div className="absolute top-6 left-6 z-10">
           <Link 
             href="/" 
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors group"
+            className="flex items-center space-x-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors group"
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium">Back to AuraLearn</span>

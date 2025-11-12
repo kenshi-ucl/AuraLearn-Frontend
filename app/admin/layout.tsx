@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { adminMe } from "@/lib/admin-api";
+import { useTheme } from "@/lib/theme-context";
 
 const { Header, Sider, Content } = Layout;
 
@@ -25,9 +26,12 @@ const navItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme: currentTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
+  
+  const isDark = currentTheme === 'dark';
 
   const selectedKeys = useMemo(() => {
     // Sort navItems by key length (longest first) to match most specific routes first
@@ -74,38 +78,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <ConfigProvider
       theme={{
-        algorithm: antdTheme.defaultAlgorithm,
+        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
-          colorPrimary: "#7C3AED",
-          colorInfo: "#7C3AED",
-          colorBgLayout: "#f7f8fa",
-          colorText: "#1b1b18",
+          colorPrimary: isDark ? "#bb86fc" : "#7C3AED",
+          colorInfo: isDark ? "#bb86fc" : "#7C3AED",
+          colorBgLayout: isDark ? "#0f0f11" : "#f7f8fa",
+          colorText: isDark ? "#fafafa" : "#1b1b18",
           borderRadius: 10,
+          colorBgContainer: isDark ? "#18181b" : "#ffffff",
+          colorBorder: isDark ? "#27272a" : "#f0f0f0",
         },
       }}
     >
       {isAuthRoute ? (
-        <div style={{ minHeight: "100vh", background: "#f7f8fa" }}>{children}</div>
+        <div style={{ minHeight: "100vh", background: isDark ? "#0f0f11" : "#f7f8fa" }}>{children}</div>
       ) : !authChecked ? (
-        <div style={{ minHeight: "100vh", background: "#f7f8fa" }} />
+        <div style={{ minHeight: "100vh", background: isDark ? "#0f0f11" : "#f7f8fa" }} />
       ) : !isAuthed ? (
-        <div style={{ minHeight: "100vh", background: "#f7f8fa" }} />
+        <div style={{ minHeight: "100vh", background: isDark ? "#0f0f11" : "#f7f8fa" }} />
       ) : (
-        <Layout style={{ minHeight: "100vh", background: "#f7f8fa" }}>
+        <Layout style={{ minHeight: "100vh", background: isDark ? "#0f0f11" : "#f7f8fa" }}>
           <Sider
             collapsible
             collapsed={collapsed}
             onCollapse={setCollapsed}
-            theme="light"
-            style={{ background: "#ffffff", borderRight: "1px solid #f0f0f0" }}
+            theme={isDark ? "dark" : "light"}
+            style={{ 
+              background: isDark ? "#18181b" : "#ffffff", 
+              borderRight: `1px solid ${isDark ? "#27272a" : "#f0f0f0"}` 
+            }}
           >
             <div style={{ padding: 16 }}>
-              <Typography.Title level={5} style={{ color: "#1b1b18", margin: 0 }}>
+              <Typography.Title level={5} style={{ color: isDark ? "#fafafa" : "#1b1b18", margin: 0 }}>
                 {collapsed ? "AL" : "AuraLearn Admin"}
               </Typography.Title>
             </div>
             <Menu
-              theme="light"
+              theme={isDark ? "dark" : "light"}
               mode="inline"
               selectedKeys={selectedKeys}
               onClick={({ key }) => {
@@ -121,12 +130,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                background: "#ffffff",
-                borderBottom: "1px solid #f0f0f0",
+                background: isDark ? "#18181b" : "#ffffff",
+                borderBottom: `1px solid ${isDark ? "#27272a" : "#f0f0f0"}`,
                 paddingInline: 16,
               }}
             >
-              <Typography.Text type="secondary" style={{ color: "#666" }}>
+              <Typography.Text type="secondary" style={{ color: isDark ? "#e4e4e7" : "#666" }}>
                 Admin Panel
               </Typography.Text>
               <Space>

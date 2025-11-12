@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage and verify with backend on mount
+  // Load user from localStorage on mount - NEVER auto-logout
   useEffect(() => {
     const initializeAuth = async () => {
       // Skip user authentication verification on admin routes
@@ -42,23 +42,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           
-          // Verify with backend
-          const response = await userMe();
-          if (response?.user) {
-            setUser(response.user);
-          } else {
-            // Clear invalid session
-            setUser(null);
-            localStorage.removeItem(USER_STORAGE_KEY);
+          // Try to sync with backend silently in background
+          // NEVER log user out automatically - only on explicit signOut()
+          try {
+            const response = await userMe();
+            if (response?.user) {
+              // Update with fresh data from backend
+              setUser(response.user);
+              console.log('✅ Session synced with backend');
+            }
+          } catch (error) {
+            // ALWAYS keep user logged in regardless of backend response
+            // Backend might be down, network might be slow, or session might have expired
+            // User will remain logged in until they explicitly click Sign Out
+            console.log('ℹ️ Backend sync failed, keeping local session active:', error);
           }
         } catch (error) {
-          // Only log auth errors if it's not a 401 (expected when not logged in)
-          if (error && typeof error === 'object' && 'message' in error && 
-              typeof error.message === 'string' && !error.message.includes('401')) {
-            console.error('Error initializing auth:', error);
-          }
-          localStorage.removeItem(USER_STORAGE_KEY);
-          setUser(null);
+          // Error parsing saved user data - keep user logged in anyway
+          // They can manually log out if there's an issue
+          console.error('⚠️ Error parsing saved user, keeping session:', error);
         }
       }
       setLoading(false);
@@ -124,13 +126,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get current user ID before clearing user state
     const currentUserId = user?.id;
     
+    console.log('🚪 User explicitly signing out');
+    
     try {
+      // Attempt to notify backend about logout
       await userLogout();
+      console.log('✅ Backend logout successful');
     } catch (error) {
-      console.error('Logout error:', error);
+      // Even if backend logout fails, still log out locally
+      // User explicitly requested to sign out
+      console.log('⚠️ Backend logout failed, but clearing local session anyway:', error);
     } finally {
-      // Clear user state
+      // ALWAYS clear user state when user explicitly signs out
       setUser(null);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      
+      console.log('✅ Local session cleared');
       
       // Optional: Clean up user data on logout (uncomment if desired)
       // if (currentUserId) {

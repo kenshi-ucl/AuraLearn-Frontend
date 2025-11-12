@@ -8,8 +8,9 @@ import CodeExecutor from '@/components/code-executor'
 import ActivityContainer from '@/components/activity-container'
 import TopicRenderer from '@/components/topic-renderer'
 import { Code2, Palette, Zap } from 'lucide-react'
-import { getCourseBySlug, formatActivityForUI, type Course, type Lesson, type UIActivity } from '@/lib/course-api'
+import { getCourseBySlug, formatActivityForUI, markLessonComplete, type Course, type Lesson, type UIActivity } from '@/lib/course-api'
 import { Spin, Alert } from 'antd'
+import { useLessonTracker } from '@/hooks/use-lesson-tracker'
 
 export default function CoursePage() {
   const params = useParams()
@@ -21,6 +22,7 @@ export default function CoursePage() {
   const [activities, setActivities] = useState<UIActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [completedActivities, setCompletedActivities] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!courseSlug) return
@@ -57,9 +59,46 @@ export default function CoursePage() {
     loadCourseData()
   }, [courseSlug])
 
+  // Track lesson progress automatically
+  const { timeSpent, progressPercentage, formatTime, markTopicComplete } = useLessonTracker({
+    courseId: course?.id || 0,
+    lessonId: currentLesson?.id || 0,
+    totalTopics: (currentLesson?.topics?.length || 0) + activities.length,
+    onProgressUpdate: (percentage) => {
+      console.log('📊 Lesson progress updated:', percentage);
+      
+      // If lesson is 100% complete, mark it as complete in backend
+      if (percentage >= 100 && course?.id && currentLesson?.id) {
+        markLessonComplete(course.id, currentLesson.id)
+          .then(() => {
+            console.log('✅ Lesson marked as complete in backend!');
+          })
+          .catch((err) => {
+            console.error('Failed to mark lesson complete:', err);
+          });
+      }
+    }
+  });
+
   const handleActivityComplete = (activityId: string) => {
-    console.log(`Activity ${activityId} completed!`)
-    // Here you could save progress to localStorage or send to backend
+    console.log(`✅ Activity ${activityId} completed!`)
+    
+    // Track this activity as completed
+    setCompletedActivities(prev => new Set([...prev, activityId]));
+    
+    // Calculate overall lesson progress
+    const totalItems = (currentLesson?.topics?.length || 0) + activities.length;
+    const completedItems = completedActivities.size + 1; // +1 for the just-completed activity
+    
+    if (totalItems > 0) {
+      const percentage = Math.round((completedItems / totalItems) * 100);
+      console.log(`📈 Progress: ${completedItems}/${totalItems} = ${percentage}%`);
+      
+      // This will also trigger markLessonComplete if at 100%
+      if (percentage >= 100) {
+        markTopicComplete(totalItems - 1);
+      }
+    }
   }
 
   // Get current lesson index
@@ -70,11 +109,11 @@ export default function CoursePage() {
   // Get the appropriate icon based on course category/title
   const getCourseIcon = () => {
     if (course?.title.toLowerCase().includes('css')) {
-      return <Palette className="w-8 h-8 text-gray-700" />
+      return <Palette className="w-8 h-8 text-[var(--text-secondary)]" />
     } else if (course?.title.toLowerCase().includes('javascript')) {
-      return <Zap className="w-8 h-8 text-gray-700" />
+      return <Zap className="w-8 h-8 text-[var(--text-secondary)]" />
     }
-    return <Code2 className="w-8 h-8 text-gray-700" />
+    return <Code2 className="w-8 h-8 text-[var(--text-secondary)]" />
   }
 
   const getCourseColor = () => {
@@ -89,12 +128,12 @@ export default function CoursePage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <Spin size="large" />
-            <p className="mt-4 text-gray-600">Loading course content...</p>
+            <p className="mt-4 text-[var(--text-secondary)]">Loading course content...</p>
           </div>
         </div>
       </div>
@@ -104,7 +143,7 @@ export default function CoursePage() {
   // Error state
   if (error || !course) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Alert
@@ -131,7 +170,7 @@ export default function CoursePage() {
   const displayDescription = currentIndex === 0 ? (course.description || `Learn ${course.title} fundamentals`) : (currentLesson?.description || '')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <TutorialLayout
         title={displayTitle}
@@ -163,10 +202,10 @@ export default function CoursePage() {
 
               {/* Course Overview if no lessons */}
               {lessons.length === 0 && (
-                <div className="bg-white rounded-2xl p-8 text-center border border-gray-200">
+                <div className="bg-[var(--surface)] rounded-2xl p-8 text-center border border-[var(--border)]">
                   {getCourseIcon()}
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2 mt-4">Course Coming Soon</h3>
-                  <p className="text-gray-600 mb-6">
+                  <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2 mt-4">Course Coming Soon</h3>
+                  <p className="text-[var(--text-secondary)] mb-6">
                     {course.title} lessons are being prepared. Check back soon for content!
                   </p>
                   

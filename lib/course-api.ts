@@ -1,10 +1,12 @@
 // Public Course API for user-facing interface
 // This is separate from admin-api.ts to keep concerns separated
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+// Always use relative URLs - Next.js will proxy to the backend
+const API_BASE = '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-    const res = await fetch(`${API_BASE}${path}`, {
+    // Use relative URL - Next.js proxy will forward to backend
+    const res = await fetch(path, {
         credentials: "include",
         cache: 'no-store', // Force fresh data
         ...init,

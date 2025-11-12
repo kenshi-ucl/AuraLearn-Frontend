@@ -11,6 +11,8 @@ interface TutorialLayoutProps {
   description: string
   currentTopic: string
   topics: string[]
+  lessonIds?: number[]
+  lessonCompletionStatuses?: { isCompleted: boolean; percentage: number }[]
   children: React.ReactNode
   onNext?: () => void
   onPrevious?: () => void
@@ -22,6 +24,8 @@ export default function TutorialLayout({
   description,
   currentTopic,
   topics,
+  lessonIds = [],
+  lessonCompletionStatuses = [],
   children,
   onNext,
   onPrevious,
@@ -32,7 +36,7 @@ export default function TutorialLayout({
   const currentIndex = topics.indexOf(currentTopic)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 
@@ -48,9 +52,12 @@ export default function TutorialLayout({
           ${sidebarCollapsed ? 'w-20' : 'w-80'}
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          <div className="h-full bg-white border-r border-gray-200 overflow-hidden flex flex-col shadow-lg">
+          <div className="h-full bg-[var(--surface-hover)] border-r border-[var(--border)] overflow-hidden flex flex-col shadow-lg relative">
+            {/* Cover element that extends above sidebar */}
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#9929EA] to-[#B84AE8] -mt-2 z-50"></div>
+            
             {/* Sidebar Header */}
-            <div className="bg-gradient-to-r from-[#9929EA] to-[#B84AE8] text-white flex-shrink-0">
+            <div className="bg-gradient-to-r from-[#9929EA] to-[#B84AE8] text-white flex-shrink-0 relative">
               {!sidebarCollapsed ? (
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -114,18 +121,29 @@ export default function TutorialLayout({
               )}
             </div>
             
-            {/* Navigation Menu */}
-            <div className="flex-1 overflow-y-auto bg-gray-50">
+            {/* Navigation Menu - Scrollable middle section */}
+            <div className="flex-1 overflow-y-auto pb-4">
               <nav className={`py-4 space-y-1 ${sidebarCollapsed ? 'px-1' : 'px-2'}`}>
                 {topics.map((topic, index) => {
-                  const isCompleted = index < currentIndex
+                  // Use backend completion data if available, otherwise fall back to index
+                  const completionStatus = lessonCompletionStatuses[index]
+                  const isCompleted = completionStatus ? (completionStatus.isCompleted || completionStatus.percentage >= 100) : (index < currentIndex)
                   const isCurrent = topic === currentTopic
-                  const isLocked = index > currentIndex + 1
+                  
+                  // Lock lesson if previous lesson is not completed
+                  const previousLessonCompleted = index === 0 || (lessonCompletionStatuses[index - 1]?.isCompleted || lessonCompletionStatuses[index - 1]?.percentage >= 100)
+                  const isLocked = !isCurrent && !isCompleted && !previousLessonCompleted
                   
                   return (
                     <Link
                       key={topic}
-                      href={`#${topic.toLowerCase().replace(/\s+/g, '-')}`}
+                      href={isLocked ? '#' : `#${topic.toLowerCase().replace(/\s+/g, '-')}`}
+                      onClick={(e) => {
+                        if (isLocked) {
+                          e.preventDefault()
+                          alert('🔒 This lesson is locked. Please complete the previous lesson first!')
+                        }
+                      }}
                       className={`
                         group relative flex items-center rounded-lg text-sm font-medium transition-all duration-200
                         ${sidebarCollapsed ? 'p-3 justify-center mx-1' : 'p-3 ml-1 mr-2'}
@@ -134,8 +152,8 @@ export default function TutorialLayout({
                           : isCompleted
                           ? 'bg-green-50 text-green-700 hover:bg-green-100 border-l-4 border-green-400'
                           : isLocked
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'bg-white text-gray-700 hover:bg-[#9929EA] hover:text-white border border-gray-200 hover:border-[#9929EA] hover:shadow-sm'
+                          ? 'bg-[var(--surface-hover)] text-[var(--text-disabled)] cursor-not-allowed opacity-60'
+                          : 'bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[#9929EA] hover:text-white border border-[var(--border)] hover:border-[#9929EA] hover:shadow-sm'
                         }
                       `}
                       title={sidebarCollapsed ? topic : ''}
@@ -188,27 +206,28 @@ export default function TutorialLayout({
                 })}
               </nav>
               
-              {/* Bottom Navigation */}
-              {!sidebarCollapsed && (
-                <div className="mt-auto pt-4 border-t border-gray-200 space-y-2 px-4 pb-4 bg-white">
-                  <Link href="/" className="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:text-[#9929EA] hover:bg-gray-50 transition-colors">
-                    <Home className="w-5 h-5" />
-                    <span className="font-medium">Back to Home</span>
-                  </Link>
-                  <Link href="/dashboard" className="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:text-[#9929EA] hover:bg-gray-50 transition-colors">
-                    <BookOpen className="w-5 h-5" />
-                    <span className="font-medium">Dashboard</span>
-                  </Link>
-                </div>
-              )}
             </div>
+            
+            {/* Bottom Navigation - Fixed at bottom */}
+            {!sidebarCollapsed && (
+              <div className="flex-shrink-0 border-t border-[var(--border)] space-y-2 px-4 py-4 bg-[var(--surface-hover)]">
+                <Link href="/" className="flex items-center space-x-3 p-3 rounded-lg text-[var(--text-secondary)] hover:text-[#9929EA] hover:bg-[var(--surface-hover)] transition-colors">
+                  <Home className="w-5 h-5" />
+                  <span className="font-medium">Back to Home</span>
+                </Link>
+                <Link href="/dashboard" className="flex items-center space-x-3 p-3 rounded-lg text-[var(--text-secondary)] hover:text-[#9929EA] hover:bg-[var(--surface-hover)] transition-colors">
+                  <BookOpen className="w-5 h-5" />
+                  <span className="font-medium">Dashboard</span>
+                </Link>
+              </div>
+            )}
           </div>
         </aside>
 
         {/* Main Content Area - Dynamically positioned */}
         <main className="flex-1 min-h-screen">
           {/* Top Navigation Bar */}
-          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+          <div className="sticky top-0 z-20 bg-[var(--surface)]/95 backdrop-blur-sm border-b border-[var(--border)]">
             <div className="px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -222,7 +241,7 @@ export default function TutorialLayout({
                     Menu
                   </Button>
                   
-                  <div className="hidden lg:flex items-center space-x-2 text-sm text-gray-500">
+                  <div className="hidden lg:flex items-center space-x-2 text-sm text-[var(--text-tertiary)]">
                     <Link href="/" className="hover:text-purple-600 transition-colors">Home</Link>
                     <ChevronRight className="w-4 h-4" />
                     <Link href="/tutorials" className="hover:text-purple-600 transition-colors">Tutorials</Link>
@@ -237,7 +256,7 @@ export default function TutorialLayout({
                       variant="outline" 
                       size="sm"
                       onClick={onPrevious}
-                      className="hidden sm:flex border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="hidden sm:flex border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
                     >
                       <ChevronLeft className="w-4 h-4 mr-1" />
                       Previous
@@ -259,29 +278,29 @@ export default function TutorialLayout({
           </div>
 
           {/* Page Header */}
-          <div className="bg-white text-gray-900 border-b border-gray-200 py-12">
+          <div className="bg-[var(--surface)] text-[var(--text-primary)] border-b border-[var(--border)] py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center space-x-4 mb-6">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-gray-700" />
+                <div className="w-16 h-16 bg-[var(--surface-hover)] rounded-2xl flex items-center justify-center">
+                  <BookOpen className="w-8 h-8 text-[var(--text-secondary)]" />
                 </div>
                 <div>
                   <h1 className="text-4xl md:text-5xl font-bold mb-2">{title}</h1>
-                  <p className="text-xl text-gray-600 mb-4">{description}</p>
+                  <p className="text-xl text-[var(--text-secondary)] mb-4">{description}</p>
                   {/* Only show course info on first lesson */}
                   {showCourseInfo && (
                     <div className="flex items-center space-x-6 text-sm">
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                        <span className="text-gray-600">Free Course</span>
+                        <span className="text-[var(--text-secondary)]">Free Course</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                        <span className="text-gray-600">{topics.length} Lessons</span>
+                        <span className="text-[var(--text-secondary)]">{topics.length} Lessons</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                        <span className="text-gray-600">Beginner Friendly</span>
+                        <span className="text-[var(--text-secondary)]">Beginner Friendly</span>
                       </div>
                     </div>
                   )}
@@ -296,7 +315,7 @@ export default function TutorialLayout({
           </div>
 
           {/* Bottom Navigation */}
-          <div className="bg-white border-t border-gray-200 py-6 mt-12">
+          <div className="bg-[var(--surface)] border-t border-[var(--border)] py-6 mt-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
                 <div className="flex items-center space-x-4">
@@ -304,7 +323,7 @@ export default function TutorialLayout({
                     <Button 
                       variant="outline" 
                       onClick={onPrevious}
-                      className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3"
+                      className="border-2 border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] px-6 py-3"
                     >
                       <ChevronLeft className="w-4 h-4 mr-2" />
                       {topics[currentIndex - 1]}
@@ -313,8 +332,8 @@ export default function TutorialLayout({
                 </div>
                 
                 <div className="text-center">
-                  <div className="text-sm text-gray-500 mb-2">Lesson {currentIndex + 1} of {topics.length}</div>
-                  <div className="w-48 bg-gray-200 rounded-full h-2">
+                  <div className="text-sm text-[var(--text-tertiary)] mb-2">Lesson {currentIndex + 1} of {topics.length}</div>
+                  <div className="w-48 bg-[var(--surface-hover)] rounded-full h-2">
                     <div 
                       className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full h-2 transition-all duration-500"
                       style={{ width: `${((currentIndex + 1) / topics.length) * 100}%` }}

@@ -133,15 +133,6 @@ export default function AdminLoginPage() {
               <div className="text-sm tracking-wider text-gray-700 font-semibold">ADMIN LOGIN</div>
             </div>
 
-            {/* Demo admin info */}
-            <div className="px-6 pt-6">
-              <div className="rounded-xl border border-gray-200 bg-slate-50 p-4 text-sm">
-                <div className="font-medium text-gray-700 mb-1">Demo Admin:</div>
-                <div className="text-purple-700 font-medium">admin@auralearn.local</div>
-                <div className="text-gray-500">Password can be anything</div>
-              </div>
-            </div>
-
             {/* Form */}
             <div className="px-6 pt-4 pb-6">
               <Form layout="vertical" onFinish={onFinish} requiredMark={false} autoComplete="on">

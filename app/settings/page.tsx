@@ -102,8 +102,8 @@ export default function SettingsPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-12 w-12 text-purple-500 animate-spin" />
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <Loader2 className="h-12 w-12 text-[var(--brand-primary)] animate-spin" />
       </div>
     );
   }
@@ -238,9 +238,9 @@ export default function SettingsPage() {
         className="sr-only peer"
       />
       <div className={`w-11 h-6 rounded-full peer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 transition-colors duration-200 ease-in-out ${
-        checked ? 'bg-purple-500' : 'bg-gray-200'
+        checked ? 'bg-[var(--brand-primary)]' : 'bg-[var(--border)]'
       } ${disabled ? 'opacity-50' : ''}`}>
-        <div className={`absolute top-0.5 left-0.5 bg-white rounded-full h-5 w-5 transition-transform duration-200 ease-in-out ${
+        <div className={`absolute top-0.5 left-0.5 bg-[var(--surface)] rounded-full h-5 w-5 transition-transform duration-200 ease-in-out ${
           checked ? 'transform translate-x-5' : ''
         }`}></div>
       </div>
@@ -253,14 +253,14 @@ export default function SettingsPage() {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Appearance</h3>
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Appearance</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Palette className="h-5 w-5 text-gray-400" />
+                    <Palette className="h-5 w-5 text-[var(--text-tertiary)]" />
                     <div>
-                      <p className="font-medium text-gray-900">Theme</p>
-                      <p className="text-sm text-gray-500">Choose your preferred color scheme</p>
+                      <p className="font-medium text-[var(--text-primary)]">Theme</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Choose your preferred color scheme</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -271,8 +271,8 @@ export default function SettingsPage() {
                       }}
                       className={`p-2 rounded-lg border-2 transition-all cursor-pointer ${
                         settings.theme === 'light' 
-                          ? 'border-purple-500 bg-purple-50' 
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-[var(--brand-primary)] bg-[var(--brand-primary-light)]' 
+                          : 'border-[var(--border)] hover:border-[var(--border-hover)]'
                       }`}
                     >
                       <Sun className="h-5 w-5" />
@@ -284,8 +284,8 @@ export default function SettingsPage() {
                       }}
                       className={`p-2 rounded-lg border-2 transition-all cursor-pointer ${
                         settings.theme === 'dark' 
-                          ? 'border-purple-500 bg-purple-50' 
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-[var(--brand-primary)] bg-[var(--brand-primary-light)]' 
+                          : 'border-[var(--border)] hover:border-[var(--border-hover)]'
                       }`}
                     >
                       <Moon className="h-5 w-5" />
@@ -295,10 +295,10 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Globe className="h-5 w-5 text-gray-400" />
+                    <Globe className="h-5 w-5 text-[var(--text-tertiary)]" />
                     <div>
-                      <p className="font-medium text-gray-900">Language</p>
-                      <p className="text-sm text-gray-500">Select your preferred language</p>
+                      <p className="font-medium text-[var(--text-primary)]">Language</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Select your preferred language</p>
                     </div>
                   </div>
                   <select
@@ -307,7 +307,7 @@ export default function SettingsPage() {
                       console.log('Language changed to:', e.target.value);
                       handleSettingChange('language', e.target.value);
                     }}
-                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer bg-white"
+                    className="border border-[var(--border)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer bg-[var(--surface)]"
                   >
                     <option value="en">English</option>
                     <option value="es">Español</option>
@@ -329,8 +329,8 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Learning Progress</p>
-                    <p className="text-sm text-gray-500">Get notified about your achievements and milestones</p>
+                    <p className="font-medium text-[var(--text-primary)]">Learning Progress</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Get notified about your achievements and milestones</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.emailNotifications ?? true}
@@ -343,8 +343,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Weekly Digest</p>
-                    <p className="text-sm text-gray-500">Summary of your weekly learning activity</p>
+                    <p className="font-medium text-[var(--text-primary)]">Weekly Digest</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Summary of your weekly learning activity</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.weeklyDigest ?? true}
@@ -357,8 +357,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Achievement Alerts</p>
-                    <p className="text-sm text-gray-500">Notifications for new badges and certificates</p>
+                    <p className="font-medium text-[var(--text-primary)]">Achievement Alerts</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Notifications for new badges and certificates</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.achievementAlerts ?? true}
@@ -371,8 +371,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Learning Reminders</p>
-                    <p className="text-sm text-gray-500">Daily reminders to maintain your streak</p>
+                    <p className="font-medium text-[var(--text-primary)]">Learning Reminders</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Daily reminders to maintain your streak</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.reminderAlerts ?? true}
@@ -392,8 +392,8 @@ export default function SettingsPage() {
                   <div className="flex items-center space-x-3">
                     <Smartphone className="h-5 w-5 text-gray-400" />
                     <div>
-                      <p className="font-medium text-gray-900">Mobile Notifications</p>
-                      <p className="text-sm text-gray-500">Receive notifications on your mobile device</p>
+                      <p className="font-medium text-[var(--text-primary)]">Mobile Notifications</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Receive notifications on your mobile device</p>
                     </div>
                   </div>
                   <ToggleSwitch
@@ -417,8 +417,8 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Profile Visibility</p>
-                    <p className="text-sm text-gray-500">Control who can see your profile</p>
+                    <p className="font-medium text-[var(--text-primary)]">Profile Visibility</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Control who can see your profile</p>
                   </div>
                   <select
                     value={settings.profileVisibility || 'public'}
@@ -426,7 +426,7 @@ export default function SettingsPage() {
                       console.log('Profile visibility changed to:', e.target.value);
                       handleSettingChange('profileVisibility', e.target.value);
                     }}
-                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer bg-white"
+                    className="border border-[var(--border)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer bg-[var(--surface)]"
                   >
                     <option value="public">Public</option>
                     <option value="friends">Friends Only</option>
@@ -436,8 +436,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Show Learning Progress</p>
-                    <p className="text-sm text-gray-500">Display your progress on your public profile</p>
+                    <p className="font-medium text-[var(--text-primary)]">Show Learning Progress</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Display your progress on your public profile</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.showProgress ?? true}
@@ -450,8 +450,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Show Badges</p>
-                    <p className="text-sm text-gray-500">Display your earned badges publicly</p>
+                    <p className="font-medium text-[var(--text-primary)]">Show Badges</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Display your earned badges publicly</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.showBadges ?? true}
@@ -464,8 +464,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Allow Messages</p>
-                    <p className="text-sm text-gray-500">Let other users send you messages</p>
+                    <p className="font-medium text-[var(--text-primary)]">Allow Messages</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Let other users send you messages</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.allowMessages ?? true}
@@ -488,8 +488,8 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Daily Learning Goal</p>
-                    <p className="text-sm text-gray-500">Minutes per day you want to spend learning</p>
+                    <p className="font-medium text-[var(--text-primary)]">Daily Learning Goal</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Minutes per day you want to spend learning</p>
                   </div>
                   <select
                     value={settings.dailyGoal || 30}
@@ -498,7 +498,7 @@ export default function SettingsPage() {
                       console.log('Daily goal changed to:', value);
                       handleSettingChange('dailyGoal', value);
                     }}
-                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer bg-white"
+                    className="border border-[var(--border)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer bg-[var(--surface)]"
                   >
                     <option value={15}>15 minutes</option>
                     <option value={30}>30 minutes</option>
@@ -511,8 +511,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Difficulty Level</p>
-                    <p className="text-sm text-gray-500">Adjust content difficulty for your skill level</p>
+                    <p className="font-medium text-[var(--text-primary)]">Difficulty Level</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Adjust content difficulty for your skill level</p>
                   </div>
                   <select
                     value={settings.difficultyLevel || 'intermediate'}
@@ -520,7 +520,7 @@ export default function SettingsPage() {
                       console.log('Difficulty level changed to:', e.target.value);
                       handleSettingChange('difficultyLevel', e.target.value);
                     }}
-                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer bg-white"
+                    className="border border-[var(--border)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer bg-[var(--surface)]"
                   >
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
@@ -531,8 +531,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Auto-Save Progress</p>
-                    <p className="text-sm text-gray-500">Automatically save your progress as you learn</p>
+                    <p className="font-medium text-[var(--text-primary)]">Auto-Save Progress</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Automatically save your progress as you learn</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.autoSave ?? true}
@@ -545,8 +545,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Skip Introductions</p>
-                    <p className="text-sm text-gray-500">Skip intro videos for lessons you've seen before</p>
+                    <p className="font-medium text-[var(--text-primary)]">Skip Introductions</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Skip intro videos for lessons you've seen before</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.skipIntros ?? false}
@@ -559,8 +559,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Show Hints</p>
-                    <p className="text-sm text-gray-500">Display helpful hints during exercises</p>
+                    <p className="font-medium text-[var(--text-primary)]">Show Hints</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Display helpful hints during exercises</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.showHints ?? true}
@@ -583,8 +583,8 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Font Size</p>
-                    <p className="text-sm text-gray-500">Adjust text size for better readability</p>
+                    <p className="font-medium text-[var(--text-primary)]">Font Size</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Adjust text size for better readability</p>
                   </div>
                   <select
                     value={settings.fontSize || 'medium'}
@@ -592,7 +592,7 @@ export default function SettingsPage() {
                       console.log('Font size changed to:', e.target.value);
                       handleSettingChange('fontSize', e.target.value);
                     }}
-                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer bg-white"
+                    className="border border-[var(--border)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer bg-[var(--surface)]"
                   >
                     <option value="small">Small</option>
                     <option value="medium">Medium</option>
@@ -603,8 +603,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">High Contrast</p>
-                    <p className="text-sm text-gray-500">Increase contrast for better visibility</p>
+                    <p className="font-medium text-[var(--text-primary)]">High Contrast</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Increase contrast for better visibility</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.highContrast ?? false}
@@ -617,8 +617,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Reduced Motion</p>
-                    <p className="text-sm text-gray-500">Minimize animations and transitions</p>
+                    <p className="font-medium text-[var(--text-primary)]">Reduced Motion</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Minimize animations and transitions</p>
                   </div>
                   <ToggleSwitch
                     checked={settings.reducedMotion ?? false}
@@ -638,8 +638,8 @@ export default function SettingsPage() {
                   <div className="flex items-center space-x-3">
                     <Volume2 className="h-5 w-5 text-gray-400" />
                     <div>
-                      <p className="font-medium text-gray-900">Sound Effects</p>
-                      <p className="text-sm text-gray-500">Play sounds for interactions and achievements</p>
+                      <p className="font-medium text-[var(--text-primary)]">Sound Effects</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Play sounds for interactions and achievements</p>
                     </div>
                   </div>
                   <ToggleSwitch
@@ -763,26 +763,26 @@ export default function SettingsPage() {
       {/* Clear Data Confirmation Modal */}
       {showClearModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md mx-4 shadow-2xl">
+          <div className="bg-[var(--surface)] rounded-xl p-6 max-w-md mx-4 shadow-2xl">
             <div className="flex items-center space-x-3 mb-4">
-              <AlertCircle className="h-6 w-6 text-red-500" />
-              <h3 className="text-xl font-bold text-gray-900">Confirm Data Deletion</h3>
+              <AlertCircle className="h-6 w-6 text-[var(--accent-error)]" />
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">Confirm Data Deletion</h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[var(--text-secondary)] mb-6">
               Are you sure you want to permanently delete all your progress and data? This action cannot be undone.
             </p>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowClearModal(false)}
                 disabled={isClearing}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleClearData}
                 disabled={isClearing}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="flex-1 px-4 py-2 bg-[var(--accent-error)] text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {isClearing ? (
                   <>
@@ -801,11 +801,11 @@ export default function SettingsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Settings Header */}
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Settings</h1>
           <button
             onClick={handleSaveSettings}
             disabled={isSaving}
-            className="bg-purple-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[var(--brand-primary)] text-white px-6 py-3 rounded-lg font-medium hover:bg-[var(--brand-primary-hover)] transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <>
@@ -824,7 +824,7 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Settings Navigation */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sticky top-8">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-4 sticky top-8">
               <nav className="space-y-1">
                 {sections.map((section) => (
                   <button
@@ -832,8 +832,8 @@ export default function SettingsPage() {
                     onClick={() => setActiveSection(section.id)}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
                       activeSection === section.id
-                        ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/20'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
                     }`}
                   >
                     {section.icon}
@@ -846,12 +846,12 @@ export default function SettingsPage() {
 
           {/* Settings Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-8">
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 capitalize">
+                <h2 className="text-2xl font-bold text-[var(--text-primary)] capitalize">
                   {activeSection} Settings
                 </h2>
-                <p className="text-gray-600 mt-1">
+                <p className="text-[var(--text-secondary)] mt-1">
                   Customize your {activeSection} preferences and options
                 </p>
               </div>

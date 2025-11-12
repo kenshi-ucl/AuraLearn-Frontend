@@ -28,8 +28,28 @@ import {
 } from "antd";
 import type { TabsProps } from "antd";
 
-// Get API base URL from environment variable
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'http://localhost:8000';
+// Helper function to convert storage paths to relative URLs for Next.js proxy
+const getStorageUrl = (path: string) => {
+  // Strip localhost URLs - these were saved when uploading locally
+  if (path.includes('localhost:8000')) {
+    let storagePath = path.split('localhost:8000')[1]; // Get path after localhost:8000
+    return storagePath.replace(/^\/+/, '/'); // Remove multiple leading slashes
+  }
+  
+  // Strip Heroku URLs and use relative path for proxy
+  if (path.includes('.herokuapp.com')) {
+    let storagePath = path.split('.herokuapp.com')[1]; // Get path after domain
+    return storagePath.replace(/^\/+/, '/'); // Remove multiple leading slashes
+  }
+  
+  // If it's any other full URL (external), return as-is
+  if (path.startsWith('http')) return path;
+  
+  // Handle relative paths
+  if (path.startsWith('/storage/')) return path; // Already has /storage/
+  if (path.startsWith('storage/')) return `/${path}`; // Add leading slash
+  return `/storage/${path}`; // Add /storage/ prefix
+};
 import { 
   PlusOutlined, 
   EditOutlined, 
@@ -517,7 +537,7 @@ export default function AdminLessonsPage() {
                                 {topic.content_type === 'image' && (
                                   <div style={{ marginBottom: 8 }}>
                                     <img 
-                                      src={topic.content.startsWith('http') ? topic.content : `${API_BASE}${topic.content.startsWith('/storage/') ? topic.content : '/storage/' + topic.content}`}
+                                      src={getStorageUrl(topic.content)}
                                       alt={topic.title}
                                       style={{ 
                                         maxWidth: 200, 
@@ -535,7 +555,7 @@ export default function AdminLessonsPage() {
                                 {topic.content_type === 'video' && (
                                   <div style={{ marginBottom: 8 }}>
                                     <video 
-                                      src={topic.content.startsWith('http') ? topic.content : `${API_BASE}${topic.content.startsWith('/storage/') ? topic.content : '/storage/' + topic.content}`}
+                                      src={getStorageUrl(topic.content)}
                                       style={{ 
                                         maxWidth: 200, 
                                         maxHeight: 120, 

@@ -230,10 +230,10 @@ export default function FAQPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading FAQ...</p>
+          <p className="text-[var(--text-secondary)]">Loading FAQ...</p>
         </div>
       </div>
     );
@@ -297,12 +297,12 @@ export default function FAQPage() {
               <HelpCircle className="h-10 w-10 text-white" />
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+            <h1 className="text-5xl md:text-6xl font-bold text-[var(--text-primary)] mb-4">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
                 Frequently Asked Questions
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+            <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-8">
               Find instant answers to common questions about AuraLearn
             </p>
 
@@ -310,32 +310,32 @@ export default function FAQPage() {
             <div className="flex flex-wrap justify-center gap-8 mb-8">
               <div className="flex items-center space-x-2">
                 <FileText className="h-5 w-5 text-purple-500" />
-                <span className="text-sm font-medium text-gray-700">{totalQuestions} Questions</span>
+                <span className="text-sm font-medium text-[var(--text-secondary)]">{totalQuestions} Questions</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className="h-5 w-5 text-pink-500" />
-                <span className="text-sm font-medium text-gray-700">Instant Answers</span>
+                <span className="text-sm font-medium text-[var(--text-secondary)]">Instant Answers</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Sparkles className="h-5 w-5 text-blue-500" />
-                <span className="text-sm font-medium text-gray-700">{totalViews.toLocaleString()} Views</span>
+                <span className="text-sm font-medium text-[var(--text-secondary)]">{totalViews.toLocaleString()} Views</span>
               </div>
             </div>
             
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto relative">
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6 z-10" />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] h-6 w-6 z-10" />
               <input
                 type="text"
                 placeholder="Search for answers, topics, or keywords..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-6 py-5 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/20 text-lg shadow-2xl border-2 border-white bg-white/90 backdrop-blur-sm transition-all"
+                className="w-full pl-16 pr-6 py-5 rounded-2xl text-[var(--text-primary)] placeholder-[var(--text-disabled)] focus:outline-none focus:ring-4 focus:ring-purple-500/20 text-lg shadow-2xl border-2 border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur-sm transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-6 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
                 >
                   <span className="text-sm font-medium">Clear</span>
                 </button>
@@ -343,9 +343,9 @@ export default function FAQPage() {
             </div>
 
             {searchQuery && (
-              <div className="mt-4 inline-flex items-center px-4 py-2 bg-white rounded-full shadow-lg">
+              <div className="mt-4 inline-flex items-center px-4 py-2 bg-[var(--surface)] rounded-full shadow-lg">
                 <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-[var(--text-secondary)]">
                   Found {filteredContent.reduce((sum, [, data]) => sum + data.questions.length, 0)} results
                 </span>
               </div>
@@ -358,7 +358,7 @@ export default function FAQPage() {
         {/* Categories Grid */}
         {!searchQuery && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center">
               <Sparkles className="h-6 w-6 text-purple-500 mr-2" />
               Browse by Category
             </h2>
@@ -371,7 +371,7 @@ export default function FAQPage() {
                   <button
                     key={category}
                     onClick={() => setActiveCategory(isActive ? null : category)}
-                    className={`group relative overflow-hidden bg-white rounded-2xl p-6 text-left transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
+                    className={`group relative overflow-hidden bg-[var(--surface)] rounded-2xl p-6 text-left transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
                       isActive ? 'ring-4 ring-purple-500/50 shadow-2xl' : 'shadow-lg'
                     }`}
                   >
@@ -382,11 +382,11 @@ export default function FAQPage() {
                         <IconComponent className="h-7 w-7 text-white" />
                       </div>
                       
-                      <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+                      <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-purple-600 transition-colors">
                         {category}
                       </h3>
                       
-                      <p className="text-gray-600 text-sm mb-4">
+                      <p className="text-[var(--text-secondary)] text-sm mb-4">
                         {data.questions.length} helpful articles
                       </p>
                       
@@ -419,8 +419,8 @@ export default function FAQPage() {
                       <IconComponent className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">{category}</h2>
-                      <p className="text-sm text-gray-500">{data.questions.length} questions</p>
+                      <h2 className="text-2xl font-bold text-[var(--text-primary)]">{category}</h2>
+                      <p className="text-sm text-[var(--text-tertiary)]">{data.questions.length} questions</p>
                     </div>
                   </div>
 
@@ -432,7 +432,7 @@ export default function FAQPage() {
                       return (
                         <div
                           key={item.id}
-                          className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 ${
+                          className={`bg-[var(--surface)] rounded-2xl shadow-lg overflow-hidden transition-all duration-300 ${
                             isExpanded ? 'ring-2 ring-purple-500/50' : 'hover:shadow-xl'
                           }`}
                         >
@@ -442,7 +442,7 @@ export default function FAQPage() {
                           >
                             <div className="flex items-start justify-between">
                               <div className="flex-1 pr-4">
-                                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors mb-2">
+                                <h3 className="text-lg font-semibold text-[var(--text-primary)] group-hover:text-purple-600 transition-colors mb-2">
                                   {item.question}
                                 </h3>
                                 <div className="flex flex-wrap gap-2">
@@ -468,8 +468,8 @@ export default function FAQPage() {
 
                           {isExpanded && (
                             <div className="px-6 pb-6 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                              <div className="border-t border-gray-100 pt-4">
-                                <p className="text-gray-700 leading-relaxed mb-4">
+                              <div className="border-t border-[var(--border)] pt-4">
+                                <p className="text-[var(--text-primary)] leading-relaxed mb-4">
                                   {item.answer}
                                 </p>
 
@@ -477,7 +477,7 @@ export default function FAQPage() {
                                 <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
                                   <div className="flex items-center space-x-2">
                                     <Sparkles className="h-4 w-4 text-purple-500" />
-                                    <span className="text-sm font-medium text-gray-700">Was this helpful?</span>
+                                    <span className="text-sm font-medium text-[var(--text-secondary)]">Was this helpful?</span>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <button
@@ -485,7 +485,7 @@ export default function FAQPage() {
                                       className={`flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                         helpfulState === 'yes'
                                           ? 'bg-green-500 text-white shadow-lg scale-105'
-                                          : 'bg-white text-gray-600 hover:bg-green-50 hover:text-green-600'
+                                          : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-green-50 hover:text-green-600'
                                       }`}
                                     >
                                       <ThumbsUp className="h-4 w-4" />
@@ -496,7 +496,7 @@ export default function FAQPage() {
                                       className={`flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                         helpfulState === 'no'
                                           ? 'bg-red-500 text-white shadow-lg scale-105'
-                                          : 'bg-white text-gray-600 hover:bg-red-50 hover:text-red-600'
+                                          : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-red-50 hover:text-red-600'
                                       }`}
                                     >
                                       <ThumbsDown className="h-4 w-4" />
@@ -517,12 +517,12 @@ export default function FAQPage() {
 
             {/* No Results */}
             {searchQuery && filteredContent.length === 0 && (
-              <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
-                  <Search className="h-10 w-10 text-gray-400" />
+              <div className="bg-[var(--surface)] rounded-2xl shadow-xl p-12 text-center">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-[var(--surface-hover)] rounded-full mb-6">
+                  <Search className="h-10 w-10 text-[var(--text-disabled)]" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">No results found</h3>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">No results found</h3>
+                <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
                   We couldn't find any FAQs matching "{searchQuery}". Try different keywords or contact our support team.
                 </p>
                 <div className="flex justify-center space-x-4">

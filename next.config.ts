@@ -1,23 +1,28 @@
 import type { NextConfig } from "next";
 
-// Get backend URL from environment variable, default to localhost for development
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_USER_API_BASE || 'http://localhost:8000';
+// Get backend URL from environment variable
+// In development (localhost), we'll use Next.js proxy to avoid CORS issues
+// In production (Vercel), we'll call the backend directly
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_ADMIN_API_BASE || process.env.NEXT_PUBLIC_USER_API_BASE || 'https://limitless-caverns-03788-f84f5932a44c.herokuapp.com';
 
 const nextConfig: NextConfig = {
 	async rewrites() {
-		// Only use rewrites in development (when API_BASE_URL is localhost)
-		// In production, the frontend will call the backend directly using NEXT_PUBLIC_* env vars
-		if (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1')) {
-			return [
-				// Proxy API calls to Laravel backend (development only)
-				{
-					source: '/api/:path*',
-					destination: `${API_BASE_URL}/api/:path*`,
-				},
-			];
-		}
-		// In production, return empty array (no rewrites needed - direct API calls)
-		return [];
+		// Always use proxy in development to avoid CORS and cookie issues
+		// This allows localhost:3000 to communicate with Heroku backend seamlessly
+		// In production (Vercel), this won't be used - direct API calls will be made
+		return [
+			// Proxy all API calls to backend
+			// This makes the browser think it's same-origin, so cookies work
+			{
+				source: '/api/:path*',
+				destination: `${API_BASE_URL}/api/:path*`,
+			},
+			// Proxy storage files (images, videos, etc.) to backend
+			{
+				source: '/storage/:path*',
+				destination: `${API_BASE_URL}/storage/:path*`,
+			},
+		];
 	},
 	eslint: {
 		ignoreDuringBuilds: true,
