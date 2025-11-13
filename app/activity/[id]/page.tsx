@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { getActivityById, formatActivityForUI, submitActivity, getActivitySubmissionStatus, type Activity, type UIActivity } from '@/lib/course-api'
 import { Spin, Alert } from 'antd'
 import { auraBotAPI, type AuraBotResponse, type SessionStatus } from '@/lib/aurabot-api'
+import { debugSubmissionResponse, isActivityCompleted } from './debug-submission'
 
 // Add slideDown animation styles
 const dropdownStyles = `
@@ -154,7 +155,7 @@ const CelebrationOverlay = ({
   return (
     <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
       {/* Overlay Background with Glassmorphism */}
-      <div className="absolute inset-0 bg-white bg-opacity-10"></div>
+      <div className="absolute inset-0 bg-[var(--surface)] bg-opacity-10 dark:bg-opacity-20"></div>
       
       {/* Enhanced Confetti Animation */}
       {showConfetti && (
@@ -173,7 +174,7 @@ const CelebrationOverlay = ({
 
       {/* Celebration Card */}
       <div 
-        className="bg-white bg-opacity-95 backdrop-blur-sm rounded-3xl p-8 max-w-md w-full mx-4 text-center relative overflow-hidden shadow-2xl border border-white border-opacity-30 z-20"
+        className="bg-[var(--surface)] bg-opacity-95 dark:bg-opacity-98 backdrop-blur-sm rounded-3xl p-8 max-w-md w-full mx-4 text-center relative overflow-hidden shadow-2xl border border-[var(--border)] border-opacity-30 z-20"
         style={{
           animation: 'celebration-popup 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2)'
@@ -212,10 +213,10 @@ const CelebrationOverlay = ({
           </div>
           
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-3">
               Activity {activityNumber} Complete! 🎉
             </h2>
-            <p className="text-gray-600 text-lg font-medium">
+            <p className="text-[var(--text-secondary)] text-lg font-medium">
               {activityTitle}
             </p>
           </div>
@@ -243,7 +244,7 @@ const CelebrationOverlay = ({
                 <Star className="w-5 h-5 animate-pulse" />
               </span>
             </Button>
-            <p className="text-sm text-gray-500 font-medium">
+            <p className="text-sm text-[var(--text-tertiary)] font-medium">
               Great job! Keep up the excellent work! 💪
             </p>
           </div>
@@ -629,13 +630,19 @@ export default function ActivityEditorPage() {
       const submission = await submitActivity(activity.id, code, timeSpentMinutes)
       console.log('Submission response:', submission)
       
+      // Debug the submission response
+      debugSubmissionResponse(submission, activity.id)
+      
       // Update local state with submission results
       setAttempts(submission.attempt_number)
       setScore(submission.score)
       setValidationResults(submission.validation_summary)
       setDetailedFeedback(submission.feedback)
       setInstructionProgress(submission.instruction_progress)
-      setIsCompleted(submission.is_completed)
+      
+      // Use strict type checking for completion status
+      const isCompleted = isActivityCompleted(submission)
+      setIsCompleted(isCompleted)
       
       // Show AuraBot only after 3 attempts (not on 1st or 2nd attempt)
       if (submission.attempt_number >= 3 && !submission.is_completed) {
@@ -645,8 +652,8 @@ export default function ActivityEditorPage() {
         setShowAuraBot(false) // Keep hidden for attempts 1-2
       }
       
-      // Handle different completion statuses
-      if (submission.is_completed) {
+      // Handle different completion statuses with strict type checking
+      if (isCompleted === true) {
         console.log('🎉 Activity completed successfully!')
         setShowCelebration(true)
         setShowAuraBot(false) // Hide AuraBot when activity is completed
@@ -920,10 +927,10 @@ export default function ActivityEditorPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--surface-active)] flex items-center justify-center">
         <div className="text-center">
           <Spin size="large" />
-          <p className="mt-4 text-gray-600">Loading activity...</p>
+          <p className="mt-4 text-[var(--text-secondary)]">Loading activity...</p>
         </div>
       </div>
     )
@@ -932,7 +939,7 @@ export default function ActivityEditorPage() {
   // Error state
   if (error || !activity) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--surface-active)] flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <Alert
             message="Activity not found"
@@ -948,12 +955,12 @@ export default function ActivityEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 h-screen overflow-y-auto">
+    <div className="min-h-screen bg-[var(--background)] h-screen overflow-y-auto">
       {/* Dropdown Animation Styles */}
       <style dangerouslySetInnerHTML={{ __html: dropdownStyles }} />
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+      <div className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] text-white">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -966,7 +973,7 @@ export default function ActivityEditorPage() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Lesson
               </Button>
-              <div className="h-6 w-px bg-white opacity-30"></div>
+              <div className="h-6 w-px bg-[var(--surface)] opacity-30"></div>
               <div className="flex items-center space-x-3">
                 <Target className="h-6 w-6" />
                 <div>
@@ -1004,37 +1011,37 @@ export default function ActivityEditorPage() {
       </div>
 
       {/* Horizontal Navigation Bar with Dropdowns and Action Buttons */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-[var(--surface)] border-b border-[var(--border)] shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between py-3">
             {/* Left Side - Dropdown Buttons */}
             <div className="flex items-center space-x-6">
               {/* Instructions Dropdown Button */}
               <div 
-                className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors duration-200"
+                className="flex items-center space-x-2 cursor-pointer hover:bg-[var(--surface-hover)] px-3 py-2 rounded-lg transition-colors duration-200"
                 onClick={() => setIsInstructionDropdownOpen(!isInstructionDropdownOpen)}
               >
                 <BookOpen className="h-5 w-5 text-purple-600" />
-                <h3 className="text-lg font-medium text-gray-800">Instructions</h3>
+                <h3 className="text-lg font-medium text-[var(--text-primary)]">Instructions</h3>
                 <div className="flex items-center space-x-1 bg-purple-100 px-2 py-1 rounded-full">
                   <span className="text-xs font-medium text-purple-700">
                     {activity.instructions.length} Steps
                   </span>
                 </div>
                 {isInstructionDropdownOpen ? (
-                  <ChevronUp className="h-4 w-4 text-gray-400" />
+                  <ChevronUp className="h-4 w-4 text-[var(--text-tertiary)]" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  <ChevronDown className="h-4 w-4 text-[var(--text-tertiary)]" />
                 )}
               </div>
 
               {/* Feedback Dropdown Button */}
               <div 
-                className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors duration-200"
+                className="flex items-center space-x-2 cursor-pointer hover:bg-[var(--surface-hover)] px-3 py-2 rounded-lg transition-colors duration-200"
                 onClick={() => setIsFeedbackDropdownOpen(!isFeedbackDropdownOpen)}
               >
                 <MessageCircle className="h-5 w-5 text-blue-600" />
-                <h3 className="text-lg font-medium text-gray-800">Feedback & Progress</h3>
+                <h3 className="text-lg font-medium text-[var(--text-primary)]">Feedback & Progress</h3>
                 
                 {/* Status Indicators */}
                 <div className="flex items-center space-x-2">
@@ -1068,9 +1075,9 @@ export default function ActivityEditorPage() {
                 </div>
 
                 {isFeedbackDropdownOpen ? (
-                  <ChevronUp className="h-4 w-4 text-gray-400" />
+                  <ChevronUp className="h-4 w-4 text-[var(--text-tertiary)]" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  <ChevronDown className="h-4 w-4 text-[var(--text-tertiary)]" />
                 )}
               </div>
             </div>
@@ -1081,7 +1088,7 @@ export default function ActivityEditorPage() {
                 onClick={runCode}
                 disabled={isRunning}
                 variant="outline"
-                className="font-semibold px-6 border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                className="font-semibold px-6 border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] flex items-center space-x-2"
               >
                 <Play className="h-4 w-4" />
                 <span>Run Preview</span>
@@ -1124,13 +1131,13 @@ export default function ActivityEditorPage() {
 
       {/* Instructions Dropdown Content */}
       {isInstructionDropdownOpen && (
-        <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="bg-[var(--surface)] border-b border-[var(--border)] shadow-sm">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="pb-4 border-t border-gray-100 animate-slideDown">
+            <div className="pb-4 border-t border-[var(--divider)] animate-slideDown">
               <div className="mt-4">
                 <div className="space-y-3">
                 {activity.instructions.map((instruction, index) => (
-                    <div key={index} className="flex items-start space-x-3 text-sm text-gray-600">
+                    <div key={index} className="flex items-start space-x-3 text-sm text-[var(--text-secondary)]">
                       <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-semibold mt-0.5">
                       {index + 1}
                     </span>
@@ -1146,19 +1153,19 @@ export default function ActivityEditorPage() {
 
       {/* Feedback Dropdown Content */}
       {isFeedbackDropdownOpen && (
-        <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="bg-[var(--surface)] border-b border-[var(--border)] shadow-sm">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="pb-4 border-t border-gray-100 animate-slideDown">
+            <div className="pb-4 border-t border-[var(--divider)] animate-slideDown">
               {/* Detailed Feedback Section */}
               {detailedFeedback && !isCompleted && (
-                <div className="mt-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg px-4 py-3">
                   <div className="flex items-start space-x-3">
                     <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <MessageCircle className="h-3 w-3 text-red-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-red-800">Feedback</p>
-                      <p className="text-sm text-red-700 whitespace-pre-line">{detailedFeedback}</p>
+                      <p className="text-sm text-red-700 dark:text-red-300 whitespace-pre-line">{detailedFeedback}</p>
                     </div>
                   </div>
                 </div>
@@ -1166,7 +1173,7 @@ export default function ActivityEditorPage() {
 
               {/* Instruction Progress */}
               {instructionProgress && !isCompleted && (
-                <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 rounded-lg px-4 py-3">
                   <div className="flex items-start space-x-3">
                     <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <CheckSquare className="h-3 w-3 text-blue-600" />
@@ -1188,16 +1195,16 @@ export default function ActivityEditorPage() {
 
               {/* Validation Results */}
               {validationResults && validationResults.overall && !isCompleted && (
-                <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                <div className="mt-4 bg-[var(--surface-hover)] border border-[var(--border)] rounded-lg px-4 py-3">
                   <div className="flex items-start space-x-3">
-                    <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <BarChart3 className="h-3 w-3 text-gray-600" />
+                    <div className="w-5 h-5 bg-[var(--surface-active)] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <BarChart3 className="h-3 w-3 text-[var(--text-secondary)]" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-[var(--text-primary)]">
                         Validation: {validationResults.overall.passed} / {validationResults.overall.total} checks passed ({validationResults.overall.percentage}%)
                       </p>
-                      <div className="mt-2 bg-gray-200 rounded-full h-2">
+                      <div className="mt-2 bg-[var(--surface-hover)] rounded-full h-2">
                         <div 
                           className="bg-green-500 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${validationResults.overall.percentage}%` }}
@@ -1210,7 +1217,7 @@ export default function ActivityEditorPage() {
 
               {/* Hints Section */}
               {showHints && (
-                <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+                <div className="mt-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg px-4 py-3">
                   <div className="flex items-start space-x-3">
                     <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Lightbulb className="h-3 w-3 text-orange-600" />
@@ -1243,12 +1250,12 @@ export default function ActivityEditorPage() {
 
               {/* No Content Message */}
               {!detailedFeedback && !instructionProgress && !validationResults && !showHints && (
-                <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                <div className="mt-4 bg-[var(--surface-hover)] border border-[var(--border)] rounded-lg px-4 py-3">
             <div className="flex items-center space-x-3">
-                    <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <MessageCircle className="h-3 w-3 text-gray-600" />
+                    <div className="w-5 h-5 bg-[var(--surface-active)] rounded-full flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="h-3 w-3 text-[var(--text-secondary)]" />
                     </div>
-                    <p className="text-sm text-gray-600">No feedback available yet. Submit your code to get feedback!</p>
+                    <p className="text-sm text-[var(--text-secondary)]">No feedback available yet. Submit your code to get feedback!</p>
                   </div>
                 </div>
               )}
@@ -1258,16 +1265,16 @@ export default function ActivityEditorPage() {
       )}
 
       {/* Main Editor Area */}
-      <div className={`bg-gray-100 ${showAuraBot && !auraBotMinimized ? 'flex flex-col h-[calc(100vh-200px)]' : 'flex h-[calc(100vh-200px)]'}`}>
+      <div className={`bg-[var(--background)] ${showAuraBot && !auraBotMinimized ? 'flex flex-col h-[calc(100vh-200px)]' : 'flex h-[calc(100vh-200px)]'}`}>
         {showAuraBot && !auraBotMinimized ? (
           // Layout with AuraBot: Code Editor + AuraBot side by side, Result below left only
           <>
             {/* Top Section: Your Code + AuraBot side by side */}
-            <div className="flex h-3/4 bg-gray-100">
+            <div className="flex h-3/4 bg-[var(--background)]">
               {/* Code Editor - Left Side */}
-              <div className="w-3/4 bg-white border-r border-gray-200 flex flex-col">
-                <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-                  <span className="text-sm font-medium text-gray-700">Your Code</span>
+              <div className="w-3/4 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col">
+                <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface-hover)] border-b border-[var(--border)]">
+                  <span className="text-sm font-medium text-[var(--text-primary)]">Your Code</span>
                 <Button
                   variant="outline"
                   size="sm"
@@ -1285,7 +1292,7 @@ export default function ActivityEditorPage() {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     onScroll={handleScroll}
-                    className="w-full h-full font-mono text-sm bg-white text-gray-800 border-none outline-none resize-none code-textarea"
+                    className="w-full h-full font-mono text-sm bg-[var(--surface)] text-[var(--text-primary)] border-none outline-none resize-none code-textarea"
                     style={{
                       lineHeight: '1.5rem',
                       tabSize: 2,
@@ -1354,7 +1361,7 @@ export default function ActivityEditorPage() {
           </div>
           
                   {/* Line Numbers with Error Indicators */}
-                  <div className="absolute left-0 top-0 bottom-0 w-12 bg-gray-50 border-r border-gray-200 overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-12 bg-[var(--surface-hover)] border-r border-[var(--border)] overflow-hidden">
                     <div 
                       className="font-mono text-sm relative line-numbers-container"
                       style={{
@@ -1398,8 +1405,8 @@ export default function ActivityEditorPage() {
               </div>
 
               {/* AuraBot - Right Side */}
-              <div className="w-1/4 bg-gray-50 flex items-start justify-start p-0 relative z-10">
-                <div className="w-full bg-white border border-gray-200 overflow-hidden relative z-20">
+              <div className="w-1/4 bg-[var(--surface-hover)] flex items-start justify-start p-0 relative z-10">
+                <div className="w-full bg-[var(--surface)] border border-[var(--border)] overflow-hidden relative z-20">
                   {/* AuraBot Header */}
                   <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-3 text-white">
                     <div className="flex items-center justify-between">
@@ -1426,7 +1433,7 @@ export default function ActivityEditorPage() {
                   </div>
 
                   {/* Chat Messages */}
-                  <div className="p-4 h-80 min-h-[350px] overflow-y-auto bg-gray-50">
+                  <div className="p-4 h-80 min-h-[350px] overflow-y-auto bg-[var(--surface-hover)]">
                     <div className="space-y-4">
                       {auraBotMessages.map((msg) => (
                         <div key={msg.id} className={`flex items-start space-x-3 ${
@@ -1439,10 +1446,10 @@ export default function ActivityEditorPage() {
                                 <Bot className="h-4 w-4 text-white" />
                               </div>
                               <div className="flex-1">
-                                <div className="bg-white rounded-2xl rounded-tl-lg px-4 py-3 shadow-sm border border-gray-100 max-w-[85%]">
+                                <div className="bg-white rounded-2xl rounded-tl-lg px-4 py-3 shadow-sm border border-[var(--divider)] max-w-[85%]">
                                   <p className="text-gray-800 text-sm leading-relaxed">{msg.message}</p>
                                 </div>
-                                <div className="text-xs text-gray-500 mt-1 px-2">
+                                <div className="text-xs text-[var(--text-tertiary)] mt-1 px-2">
                                   {msg.timestamp.toLocaleTimeString()}
                                 </div>
                               </div>
@@ -1472,9 +1479,9 @@ export default function ActivityEditorPage() {
                           <div className="flex-1">
                             <div className="bg-white rounded-2xl rounded-tl-lg px-4 py-3 shadow-sm border border-gray-100">
                               <div className="flex space-x-1">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                <div className="w-2 h-2 bg-[var(--text-disabled)] rounded-full animate-bounce"></div>
+                                <div className="w-2 h-2 bg-[var(--text-disabled)] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                <div className="w-2 h-2 bg-[var(--text-disabled)] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                               </div>
                             </div>
                           </div>
@@ -1484,10 +1491,10 @@ export default function ActivityEditorPage() {
                   </div>
 
                   {/* Chat Input */}
-                  <div className="p-4 border-t border-gray-200 bg-white">
+                  <div className="p-4 border-t border-[var(--border)] bg-white">
                     {/* Error display */}
                     {auraBotError && (
-                      <div className="mb-3 p-2 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm flex items-center justify-between">
+                      <div className="mb-3 p-2 bg-red-100 border border-red-300 rounded-lg text-red-700 dark:text-red-300 text-sm flex items-center justify-between">
                         <span>{auraBotError}</span>
                         <button onClick={() => setAuraBotError(null)} className="text-red-500 hover:text-red-700">
                           <X className="h-4 w-4" />
@@ -1514,7 +1521,7 @@ export default function ActivityEditorPage() {
                             ? "Question limit reached..." 
                             : "Ask AuraBot for help with this activity..."
                         }
-                        className="flex-1 px-3 py-2 bg-gray-100 rounded-full border-0 focus:ring-2 focus:ring-purple-500 focus:bg-white transition-colors text-sm"
+                        className="flex-1 px-3 py-2 bg-[var(--surface-active)] rounded-full border-0 focus:ring-2 focus:ring-purple-500 focus:bg-white transition-colors text-sm"
                         disabled={auraBotLoading || !auraBotInitialized || auraBotSessionStatus?.can_ask === false}
                       />
                       <button 
@@ -1529,7 +1536,7 @@ export default function ActivityEditorPage() {
                         )}
                       </button>
                     </form>
-                    <p className="text-xs text-gray-500 mt-2 text-center">
+                    <p className="text-xs text-[var(--text-tertiary)] mt-2 text-center">
                       {auraBotSessionStatus?.remaining_attempts !== undefined 
                         ? `Powered by AuraLearn`
                         : ''
@@ -1541,12 +1548,12 @@ export default function ActivityEditorPage() {
             </div>
 
             {/* Bottom Section: Result - Only left 75% width */}
-            <div className="flex h-1/4 border-t border-gray-200 bg-gray-100">
+            <div className="flex h-1/4 border-t border-[var(--border)] bg-[var(--surface-active)]">
               {/* Result - Only left side */}
-              <div className="w-3/4 bg-white border-r border-gray-200 flex flex-col">
-                <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-                  <span className="text-sm font-medium text-gray-700">Result</span>
-                  <span className="text-xs text-gray-500">Live Preview</span>
+              <div className="w-3/4 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col">
+                <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface-hover)] border-b border-[var(--border)]">
+                  <span className="text-sm font-medium text-[var(--text-primary)]">Result</span>
+                  <span className="text-xs text-[var(--text-tertiary)]">Live Preview</span>
                 </div>
                 
                 <div className="flex-1 bg-white">
@@ -1558,7 +1565,7 @@ export default function ActivityEditorPage() {
                       referrerPolicy="strict-origin-when-cross-origin"
                     />
                   ) : (
-                    <div className="h-full flex items-center justify-center text-gray-500">
+                    <div className="h-full flex items-center justify-center text-[var(--text-tertiary)]">
                       <span>Run your code to see the result</span>
             </div>
           )}
@@ -1566,16 +1573,16 @@ export default function ActivityEditorPage() {
       </div>
 
               {/* Empty space - Right side (reserved for AuraBot area) */}
-              <div className="w-1/4 bg-gray-50 pointer-events-none"></div>
+              <div className="w-1/4 bg-[var(--surface-hover)] pointer-events-none"></div>
             </div>
           </>
         ) : (
           // Normal layout without AuraBot: 50/50 split
           <>
         {/* Code Editor */}
-        <div className="w-1/2 bg-white border-r border-gray-200 flex flex-col">
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-            <span className="text-sm font-medium text-gray-700">Your Code</span>
+        <div className="w-1/2 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col">
+          <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface-hover)] border-b border-[var(--border)]">
+            <span className="text-sm font-medium text-[var(--text-primary)]">Your Code</span>
             <Button
               variant="outline"
               size="sm"
@@ -1593,7 +1600,7 @@ export default function ActivityEditorPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onScroll={handleScroll}
-              className="w-full h-full font-mono text-sm bg-white text-gray-800 border-none outline-none resize-none code-textarea"
+              className="w-full h-full font-mono text-sm bg-[var(--surface)] text-[var(--text-primary)] border-none outline-none resize-none code-textarea"
               style={{
                 lineHeight: '1.5rem',
                 tabSize: 2,
@@ -1662,7 +1669,7 @@ export default function ActivityEditorPage() {
             </div>
             
             {/* Line Numbers with Error Indicators */}
-            <div className="absolute left-0 top-0 bottom-0 w-12 bg-gray-50 border-r border-gray-200 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-12 bg-[var(--surface-hover)] border-r border-[var(--border)] overflow-hidden">
               <div 
                 className="font-mono text-sm relative line-numbers-container"
                 style={{
@@ -1706,10 +1713,10 @@ export default function ActivityEditorPage() {
         </div>
 
         {/* Output Panel */}
-        <div className="w-1/2 bg-white flex flex-col">
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-            <span className="text-sm font-medium text-gray-700">Result</span>
-            <span className="text-xs text-gray-500">Live Preview</span>
+        <div className="w-1/2 bg-[var(--surface)] flex flex-col">
+          <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface-hover)] border-b border-[var(--border)]">
+            <span className="text-sm font-medium text-[var(--text-primary)]">Result</span>
+            <span className="text-xs text-[var(--text-tertiary)]">Live Preview</span>
           </div>
           
           <div className="flex-1 bg-white">
@@ -1742,7 +1749,7 @@ export default function ActivityEditorPage() {
                 referrerPolicy="strict-origin-when-cross-origin"
               />
             ) : (
-              <div className="h-full flex items-center justify-center text-sm text-gray-500">
+              <div className="h-full flex items-center justify-center text-sm text-[var(--text-tertiary)]">
                 Run your code to see the result
               </div>
             )}
@@ -1805,7 +1812,7 @@ export default function ActivityEditorPage() {
                     <div className="text-sm font-medium text-red-800">
                       Line {error.line}: {error.message}
                     </div>
-                    <div className="text-xs text-red-600 mt-1">
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                       {error.type === 'missing-element' && 'Required HTML element is missing'}
                       {error.type === 'unclosed-tag' && 'HTML tag is not properly closed'}
                       {error.type === 'syntax-error' && 'HTML syntax error detected'}
@@ -1822,9 +1829,9 @@ export default function ActivityEditorPage() {
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3">
+      <div className="bg-white border-t border-[var(--border)] px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-sm text-gray-600 flex items-center space-x-4">
+          <div className="text-sm text-[var(--text-secondary)] flex items-center space-x-4">
             {!isCompleted ? (
               <>
                
@@ -1860,9 +1867,9 @@ export default function ActivityEditorPage() {
         </div>
       </div>
 
-      {/* Celebration Overlay */}
+      {/* Celebration Overlay - Only show when activity is truly completed */}
       <CelebrationOverlay
-        isVisible={showCelebration}
+        isVisible={showCelebration && isCompleted === true}
         onClose={handleCelebrationClose}
         activityTitle={activity.title}
         activityNumber={parseInt(activityId) || 1}

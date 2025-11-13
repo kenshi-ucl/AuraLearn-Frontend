@@ -33,14 +33,14 @@ export default function ActivityContainer({ activity, isCompleted = false, onCom
   return (
     <div className={`w-full border-2 rounded-lg overflow-hidden ${
       isCompleted 
-        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300' 
-        : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
+        ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-300 dark:border-green-700' 
+        : 'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-700'
     }`}>
       {/* Activity Header */}
       <div className={`text-white px-6 py-4 ${
         isCompleted
-          ? 'bg-gradient-to-r from-green-600 to-emerald-600'
-          : 'bg-gradient-to-r from-purple-600 to-pink-600'
+          ? 'bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700'
+          : 'bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700'
       }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -51,7 +51,7 @@ export default function ActivityContainer({ activity, isCompleted = false, onCom
             )}
             <div>
               <h3 className="text-lg font-semibold">Activity: {activity.title}</h3>
-              <p className={`text-sm ${isCompleted ? 'text-green-100' : 'text-purple-100'}`}>{activity.description}</p>
+              <p className={`text-sm ${isCompleted ? 'text-green-100 dark:text-green-200' : 'text-purple-100 dark:text-purple-200'}`}>{activity.description}</p>
             </div>
           </div>
           {isCompleted && (
@@ -73,7 +73,7 @@ export default function ActivityContainer({ activity, isCompleted = false, onCom
           <ul className="space-y-2">
             {activity.instructions.map((instruction, index) => (
               <li key={index} className="flex items-start space-x-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 rounded-full flex items-center justify-center text-sm font-semibold">
                   {index + 1}
                 </span>
                 <span className="text-[var(--text-primary)]">{instruction}</span>
@@ -82,11 +82,11 @@ export default function ActivityContainer({ activity, isCompleted = false, onCom
           </ul>
         </div>
 
-        <div className={`flex items-center justify-between pt-4 border-t ${
-          isCompleted ? 'border-green-200' : 'border-purple-200'
-        }`}>
+          <div className={`flex items-center justify-between pt-4 border-t ${
+            isCompleted ? 'border-green-200 dark:border-green-800' : 'border-purple-200 dark:border-purple-800'
+          }`}>
           <div className="text-sm text-[var(--text-secondary)] flex items-center">
-            <ExternalLink className={`h-4 w-4 mr-2 ${isCompleted ? 'text-green-500' : 'text-purple-500'}`} />
+              <ExternalLink className={`h-4 w-4 mr-2 ${isCompleted ? 'text-green-500 dark:text-green-400' : 'text-purple-500 dark:text-purple-400'}`} />
             <span className="font-medium">{isCompleted ? 'Activity completed' : 'Opens in full-screen editor'}</span>
           </div>
           <Button

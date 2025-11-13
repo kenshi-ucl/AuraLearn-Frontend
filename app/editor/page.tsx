@@ -230,35 +230,6 @@ export default function EditorPage() {
             >
               ← Back
             </a>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyCode}
-                className="text-xs"
-              >
-                <Copy className="h-3 w-3 mr-1" />
-                Copy
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetCode}
-                className="text-xs"
-              >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Reset
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={saveCode}
-                className="text-xs"
-              >
-                <Save className="h-3 w-3 mr-1" />
-                Save
-              </Button>
-            </div>
           </div>
           <div className="flex items-center space-x-4">
             <Button

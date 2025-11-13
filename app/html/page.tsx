@@ -33,6 +33,17 @@ export default function HTMLTutorial() {
     const completionMap = new Map<number, LessonCompletionStatus>()
     
     for (const lesson of lessonsList) {
+      const hasActivities = Array.isArray(lesson.activities) && lesson.activities.length > 0
+      
+      if (!hasActivities) {
+        completionMap.set(lesson.id, {
+          lessonId: lesson.id,
+          isCompleted: true,
+          percentage: 100
+        })
+        continue
+      }
+
       try {
         const progress = await getLessonProgress(courseId, lesson.id)
         if (progress) {
@@ -78,6 +89,9 @@ export default function HTMLTutorial() {
           const firstLesson = response.course.lessons[0]
           setCurrentLesson(firstLesson)
           
+          // Update URL hash to match current lesson
+          window.location.hash = firstLesson.title.toLowerCase().replace(/\s+/g, '-')
+          
           // Fetch completion status for all lessons
           await fetchAllLessonCompletions(response.course.id, response.course.lessons)
           
@@ -115,11 +129,15 @@ export default function HTMLTutorial() {
     loadCourseData()
   }, [])
 
+  const trackableCount = currentLesson?.activities?.length && currentLesson.activities.length > 0
+    ? currentLesson.activities.length
+    : Math.max(currentLesson?.topics?.length || 0, 1);
+
   // Track lesson progress automatically
   const { timeSpent, progressPercentage, formatTime, markTopicComplete } = useLessonTracker({
     courseId: course?.id || 0,
     lessonId: currentLesson?.id || 0,
-    totalTopics: (currentLesson?.topics?.length || 0) + activities.length,
+    totalTopics: trackableCount,
     onProgressUpdate: (percentage) => {
       console.log('📊 Lesson progress updated:', percentage);
       
@@ -144,16 +162,51 @@ export default function HTMLTutorial() {
     setCompletedActivities(newCompletedActivities);
     
     // Calculate overall lesson progress
-    const totalItems = (currentLesson?.topics?.length || 0) + activities.length;
+    const totalActivities = currentLesson?.activities?.length || 0;
     const completedItems = newCompletedActivities.size;
+    const safeTotal = totalActivities > 0 ? totalActivities : 1;
+    const percentage = Math.round((completedItems / safeTotal) * 100);
+    console.log(`📈 Progress: ${completedItems}/${safeTotal} activities = ${percentage}%`);
     
-    if (totalItems > 0) {
-      const percentage = Math.round((completedItems / totalItems) * 100);
-      console.log(`📈 Progress: ${completedItems}/${totalItems} = ${percentage}%`);
-      
-      // This will also trigger markLessonComplete if at 100%
+    if (totalActivities === 0 && currentLesson?.id) {
+      setLessonCompletionData(prev => {
+        const newMap = new Map(prev);
+        newMap.set(currentLesson.id, {
+          lessonId: currentLesson.id,
+          isCompleted: true,
+          percentage: 100
+        });
+        return newMap;
+      });
+    }
+    
+    if (totalActivities > 0) {
       if (percentage >= 100) {
-        markTopicComplete(totalItems - 1);
+        // This will also trigger markLessonComplete if at 100%
+        markTopicComplete(totalActivities - 1);
+        
+        if (currentLesson?.id) {
+          setLessonCompletionData(prev => {
+            const newMap = new Map(prev);
+            newMap.set(currentLesson.id, {
+              lessonId: currentLesson.id,
+              isCompleted: true,
+              percentage: 100
+            });
+            return newMap;
+          });
+        }
+      } else if (currentLesson?.id) {
+        setLessonCompletionData(prev => {
+          const newMap = new Map(prev);
+          const existing = newMap.get(currentLesson.id);
+          newMap.set(currentLesson.id, {
+            lessonId: currentLesson.id,
+            isCompleted: existing?.isCompleted ?? false,
+            percentage
+          });
+          return newMap;
+        });
       }
     }
     
@@ -169,8 +222,8 @@ export default function HTMLTutorial() {
             const newMap = new Map(prev)
             newMap.set(currentLesson.id, {
               lessonId: currentLesson.id,
-              isCompleted: progress.is_completed,
-              percentage: progress.completion_percentage
+              isCompleted: progress.is_completed || percentage >= 100,
+              percentage: progress.completion_percentage ?? percentage
             })
             return newMap
           })
@@ -186,18 +239,110 @@ export default function HTMLTutorial() {
     return lessons.findIndex(lesson => lesson.id === currentLesson?.id)
   }
 
+  // Handle lesson selection from sidebar
+  const handleLessonSelect = async (lessonIndex: number) => {
+    if (!course || lessonIndex < 0 || lessonIndex >= lessons.length) return
+    
+    const targetLesson = lessons[lessonIndex]
+    if (!targetLesson) return
+    
+    // Check if the lesson is locked
+    const canNavigate = await checkCanNavigateToLesson(lessonIndex)
+    if (!canNavigate) {
+      return // The check function will show an alert
+    }
+    
+    // Set the new current lesson
+    setCurrentLesson(targetLesson)
+    setCompletedActivities(new Set()) // Reset for new lesson
+    
+    // Load activities for the selected lesson
+    if (targetLesson.activities && targetLesson.activities.length > 0) {
+      const uiActivities = targetLesson.activities.map(formatActivityForUI)
+      setActivities(uiActivities)
+      
+      // Check completion status for activities
+      const completed = new Set<string>()
+      for (const activity of uiActivities) {
+        try {
+          const { getActivitySubmissionStatus } = await import('@/lib/course-api')
+          const status = await getActivitySubmissionStatus(activity.id)
+          if (status.is_completed) {
+            completed.add(activity.id.toString())
+          }
+        } catch (err) {
+          console.warn(`Failed to check status for activity ${activity.id}`)
+        }
+      }
+      setCompletedActivities(completed)
+    } else {
+      setActivities([])
+    }
+    
+    console.log('📍 Navigated to lesson:', targetLesson.title)
+    
+    // Update URL hash
+    window.location.hash = targetLesson.title.toLowerCase().replace(/\s+/g, '-')
+  }
+
+  // Helper function to check if user can navigate to a lesson
+  const checkCanNavigateToLesson = async (targetIndex: number): Promise<boolean> => {
+    if (!course || targetIndex === 0) return true // First lesson is always accessible
+    
+    // Check if all previous lessons are completed
+    for (let i = 0; i < targetIndex; i++) {
+      const lesson = lessons[i]
+      if (!lesson) continue
+
+      const hasActivities = Array.isArray(lesson.activities) && lesson.activities.length > 0
+      if (!hasActivities) continue
+      
+      const completion = lessonCompletionData.get(lesson.id)
+      const isFinished = completion?.isCompleted || (completion?.percentage ?? 0) >= 100
+      
+      if (!isFinished) {
+        // Try to fetch fresh data
+        try {
+          const progress = await getLessonProgress(course.id, lesson.id)
+          const progressFinished = progress?.is_completed || (progress?.completion_percentage ?? 0) >= 100
+          if (!progressFinished) {
+            alert(`⚠️ Please complete "${lesson.title}" before proceeding to later lessons!`)
+            return false
+          }
+        } catch (err) {
+          alert(`⚠️ Please complete "${lesson.title}" before proceeding!`)
+          return false
+        }
+      }
+    }
+    
+    return true
+  }
+
   // Navigation handlers
   const handleNext = async () => {
     if (!currentLesson || !course) return
     
     // Check if current lesson is completed
     const currentCompletion = lessonCompletionData.get(currentLesson.id)
+    const hasActivities = Array.isArray(currentLesson.activities) && currentLesson.activities.length > 0
+    const localActivitiesCompleted = hasActivities
+      ? currentLesson.activities?.every(activity => completedActivities.has(activity.id.toString())) ?? false
+      : true
+    const backendCompleted = currentCompletion?.isCompleted || (currentCompletion?.percentage ?? 0) >= 100
     
-    if (!currentCompletion || currentCompletion.percentage < 100) {
+    if (!localActivitiesCompleted && !backendCompleted) {
+      if (hasActivities) {
+        alert('⚠️ Please complete all activities in this lesson before proceeding to the next one!')
+        return
+      }
+    }
+    
+    if (!backendCompleted) {
       // Fetch fresh data from backend to be sure
       try {
         const progress = await getLessonProgress(course.id, currentLesson.id)
-        if (!progress || progress.completion_percentage < 100) {
+        if (!progress || (!progress.is_completed && (progress.completion_percentage ?? 0) < 100)) {
           alert('⚠️ Please complete all activities in this lesson before proceeding to the next one!')
           return
         }
@@ -209,38 +354,14 @@ export default function HTMLTutorial() {
     
     const currentIndex = lessons.findIndex(lesson => lesson.id === currentLesson?.id)
     if (currentIndex < lessons.length - 1) {
-      const nextLesson = lessons[currentIndex + 1]
-      setCurrentLesson(nextLesson)
-      setCompletedActivities(new Set()) // Reset for new lesson
-      
-      // Load activities for the next lesson
-      if (nextLesson.activities && nextLesson.activities.length > 0) {
-        const uiActivities = nextLesson.activities.map(formatActivityForUI)
-        setActivities(uiActivities)
-      } else {
-        setActivities([])
-      }
-      
-      console.log('➡️ Moved to next lesson:', nextLesson.title);
+      await handleLessonSelect(currentIndex + 1)
     }
   }
 
   const handlePrevious = () => {
     const currentIndex = lessons.findIndex(lesson => lesson.id === currentLesson?.id)
     if (currentIndex > 0) {
-      const prevLesson = lessons[currentIndex - 1]
-      setCurrentLesson(prevLesson)
-      setCompletedActivities(new Set()) // Reset for new lesson
-      
-      // Load activities for the previous lesson
-      if (prevLesson.activities && prevLesson.activities.length > 0) {
-        const uiActivities = prevLesson.activities.map(formatActivityForUI)
-        setActivities(uiActivities)
-      } else {
-        setActivities([])
-      }
-      
-      console.log('⬅️ Moved to previous lesson:', prevLesson.title);
+      handleLessonSelect(currentIndex - 1)
     }
   }
 
@@ -498,6 +619,7 @@ export default function HTMLTutorial() {
           topics={fallbackLessons}
           onNext={handleFallbackNext}
           onPrevious={handleFallbackPrevious}
+          onLessonSelect={(index) => setFallbackCurrentIndex(index)}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
@@ -548,9 +670,14 @@ export default function HTMLTutorial() {
   const lessonIds = lessons.map(lesson => lesson.id)
   const lessonCompletionStatuses = lessons.map(lesson => {
     const completion = lessonCompletionData.get(lesson.id)
+    const hasActivities = Array.isArray(lesson.activities) && lesson.activities.length > 0
+    const isCompleted = hasActivities
+      ? (completion?.isCompleted || (completion?.percentage ?? 0) >= 100)
+      : true
+
     return {
-      isCompleted: completion?.isCompleted || false,
-      percentage: completion?.percentage || 0
+      isCompleted,
+      percentage: hasActivities ? (completion?.percentage || 0) : 100
     }
   })
 
@@ -561,6 +688,14 @@ export default function HTMLTutorial() {
   const displayTitle = currentIndex === 0 ? course.title : (currentLesson?.title || course.title)
   const displayDescription = currentIndex === 0 ? (course.description || '') : (currentLesson?.description || '')
   
+  // Check if current lesson is completed
+  const currentLessonCompletion = currentLesson ? lessonCompletionData.get(currentLesson.id) : null
+  const hasCurrentActivities = Array.isArray(currentLesson?.activities) && currentLesson.activities.length > 0
+  const localActivitiesCompleted = hasCurrentActivities
+    ? currentLesson.activities?.every(activity => completedActivities.has(activity.id.toString())) ?? false
+    : true
+  const backendCurrentCompleted = currentLessonCompletion ? (currentLessonCompletion.isCompleted || currentLessonCompletion.percentage >= 100) : false
+  const isCurrentLessonCompleted = localActivitiesCompleted || backendCurrentCompleted
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
@@ -573,7 +708,9 @@ export default function HTMLTutorial() {
         lessonCompletionStatuses={lessonCompletionStatuses}
         onNext={handleNext}
         onPrevious={handlePrevious}
+        onLessonSelect={handleLessonSelect}
         showCourseInfo={currentIndex === 0}
+        isCurrentLessonCompleted={isCurrentLessonCompleted}
       >
         {/* Main Content Container */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

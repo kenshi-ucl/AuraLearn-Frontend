@@ -16,7 +16,9 @@ interface TutorialLayoutProps {
   children: React.ReactNode
   onNext?: () => void
   onPrevious?: () => void
+  onLessonSelect?: (lessonIndex: number) => void
   showCourseInfo?: boolean
+  isCurrentLessonCompleted?: boolean
 }
 
 export default function TutorialLayout({
@@ -29,7 +31,9 @@ export default function TutorialLayout({
   children,
   onNext,
   onPrevious,
-  showCourseInfo = false
+  onLessonSelect,
+  showCourseInfo = false,
+  isCurrentLessonCompleted = false
 }: TutorialLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -130,18 +134,50 @@ export default function TutorialLayout({
                   const isCompleted = completionStatus ? (completionStatus.isCompleted || completionStatus.percentage >= 100) : (index < currentIndex)
                   const isCurrent = topic === currentTopic
                   
-                  // Lock lesson if previous lesson is not completed
-                  const previousLessonCompleted = index === 0 || (lessonCompletionStatuses[index - 1]?.isCompleted || lessonCompletionStatuses[index - 1]?.percentage >= 100)
-                  const isLocked = !isCurrent && !isCompleted && !previousLessonCompleted
+                  // Determine if the lesson should be locked
+                  // Allow access to:
+                  // 1. The first lesson (always accessible)
+                  // 2. The current lesson (always accessible) 
+                  // 3. Any completed lesson (always accessible)
+                  // 4. The next lesson after the last completed lesson (to allow progression)
+                  let isLocked = false
+                  
+                  if (index === 0 || isCurrent || isCompleted) {
+                    // First lesson, current lesson, or completed lessons are never locked
+                    isLocked = false
+                  } else {
+                    // For other lessons, check if all previous lessons are completed
+                    let canAccess = true
+                    for (let i = 0; i < index; i++) {
+                      const prevStatus = lessonCompletionStatuses[i]
+                      if (!prevStatus?.isCompleted && prevStatus?.percentage < 100) {
+                        canAccess = false
+                        break
+                      }
+                    }
+                    isLocked = !canAccess
+                  }
                   
                   return (
                     <Link
                       key={topic}
                       href={isLocked ? '#' : `#${topic.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={(e) => {
+                        e.preventDefault()
                         if (isLocked) {
-                          e.preventDefault()
-                          alert('🔒 This lesson is locked. Please complete the previous lesson first!')
+                          // Find the last incomplete lesson before this one
+                          let incompleteLesson = null
+                          for (let i = 0; i < index; i++) {
+                            const prevStatus = lessonCompletionStatuses[i]
+                            if (!prevStatus?.isCompleted && prevStatus?.percentage < 100) {
+                              incompleteLesson = topics[i]
+                              break
+                            }
+                          }
+                          alert(`🔒 This lesson is locked. Please complete "${incompleteLesson || 'the previous lesson'}" first!`)
+                        } else if (!isCurrent && onLessonSelect) {
+                          // Navigate to the selected lesson
+                          onLessonSelect(index)
                         }
                       }}
                       className={`
@@ -266,9 +302,15 @@ export default function TutorialLayout({
                     <Button 
                       size="sm"
                       onClick={onNext}
-                      className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                      disabled={!isCurrentLessonCompleted}
+                      className={`${
+                        isCurrentLessonCompleted
+                          ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white'
+                          : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                      }`}
+                      title={!isCurrentLessonCompleted ? 'Complete all activities in this lesson first' : ''}
                     >
-                      Next
+                      {isCurrentLessonCompleted ? 'Next' : 'Complete Lesson First'}
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   )}
@@ -345,9 +387,15 @@ export default function TutorialLayout({
                   {currentIndex < topics.length - 1 && (
                     <Button 
                       onClick={onNext}
-                      className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-6 py-3"
+                      disabled={!isCurrentLessonCompleted}
+                      className={`px-6 py-3 ${
+                        isCurrentLessonCompleted
+                          ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white'
+                          : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                      }`}
+                      title={!isCurrentLessonCompleted ? 'Complete all activities in this lesson first' : ''}
                     >
-                      {topics[currentIndex + 1]}
+                      {isCurrentLessonCompleted ? topics[currentIndex + 1] : 'Complete Lesson First'}
                       <ChevronRight className="w-4 h-4 ml-2" />
                     </Button>
                   )}
