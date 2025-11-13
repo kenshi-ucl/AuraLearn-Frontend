@@ -10,6 +10,7 @@ import { ThemeConfigProvider } from "@/components/theme-config-provider";
 import AntdCompat from "./antd-compat";
 import HydrationErrorBoundary from "@/components/hydration-error-boundary";
 import HydrationSuppressor from "@/components/hydration-suppressor";
+import { ToastProvider } from "@/components/ui/toast-notifications";
 
 // Temporarily using system fonts due to Turbopack font loading issue
 // const geistSans = Geist({
@@ -145,13 +146,15 @@ export default function RootLayout({
         <HydrationErrorBoundary>
           <ThemeProvider>
             <ConditionalAuthProvider>
-              <AntdRegistry>
-                <ThemeConfigProvider>
-                  <AntdApp>
-                    {children}
-                  </AntdApp>
-                </ThemeConfigProvider>
-              </AntdRegistry>
+              <ToastProvider>
+                <AntdRegistry>
+                  <ThemeConfigProvider>
+                    <AntdApp>
+                      {children}
+                    </AntdApp>
+                  </ThemeConfigProvider>
+                </AntdRegistry>
+              </ToastProvider>
             </ConditionalAuthProvider>
           </ThemeProvider>
         </HydrationErrorBoundary>

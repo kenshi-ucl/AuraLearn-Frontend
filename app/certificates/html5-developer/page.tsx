@@ -53,7 +53,7 @@ const modules: Module[] = [
     duration: '2 hours',
     lessons: 7,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'images-and-media',
@@ -62,7 +62,7 @@ const modules: Module[] = [
     duration: '3 hours',
     lessons: 12,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'forms-and-inputs',
@@ -71,7 +71,7 @@ const modules: Module[] = [
     duration: '4 hours',
     lessons: 15,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'tables',
@@ -80,7 +80,7 @@ const modules: Module[] = [
     duration: '2 hours',
     lessons: 8,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'semantic-html',
@@ -89,7 +89,7 @@ const modules: Module[] = [
     duration: '3 hours',
     lessons: 10,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'html5-features',
@@ -98,7 +98,7 @@ const modules: Module[] = [
     duration: '3.5 hours',
     lessons: 12,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'accessibility',
@@ -107,7 +107,7 @@ const modules: Module[] = [
     duration: '2.5 hours',
     lessons: 9,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'seo-basics',
@@ -116,7 +116,7 @@ const modules: Module[] = [
     duration: '2 hours',
     lessons: 7,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'final-project',
@@ -125,7 +125,7 @@ const modules: Module[] = [
     duration: '6 hours',
     lessons: 1,
     completed: false,
-    locked: true
+    locked: false
   }
 ];
 
@@ -273,7 +273,7 @@ export default function HTML5DeveloperPage() {
                 <div className="flex items-center space-x-4">
                   <Button 
                     className="flex items-center space-x-2"
-                    disabled={module.locked}
+                    disabled={false}
                   >
                     {module.completed ? (
                       <>
@@ -288,12 +288,6 @@ export default function HTML5DeveloperPage() {
                     )}
                   </Button>
                   
-                  {module.locked && (
-                    <span className="text-sm text-gray-500 flex items-center">
-                      <Lock className="w-4 h-4 mr-1" />
-                      Complete previous modules to unlock
-                    </span>
-                  )}
                 </div>
               </Card>
             </TabsContent>

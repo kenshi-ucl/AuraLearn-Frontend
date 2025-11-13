@@ -8,6 +8,7 @@ import { getActivityById, formatActivityForUI, submitActivity, getActivitySubmis
 import { Spin, Alert } from 'antd'
 import { auraBotAPI, type AuraBotResponse, type SessionStatus } from '@/lib/aurabot-api'
 import { debugSubmissionResponse, isActivityCompleted } from './debug-submission'
+import { NotificationBadge, NotificationBadgeLarge } from '@/components/ui/notification-badge'
 
 // Add slideDown animation styles
 const dropdownStyles = `
@@ -340,6 +341,16 @@ export default function ActivityEditorPage() {
   const [showErrorPanel, setShowErrorPanel] = useState(false)
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  
+  // Calculate feedback count for notification badge
+  const feedbackCount = (() => {
+    let count = 0;
+    if (detailedFeedback && !isCompleted) count++;
+    if (instructionProgress && !isCompleted) count++;
+    if (validationResults && !isCompleted) count++;
+    if (showHints) count++;
+    return count;
+  })()
 
   // Initialize AuraBot when component mounts
   useEffect(() => {
@@ -633,16 +644,16 @@ export default function ActivityEditorPage() {
       // Debug the submission response
       debugSubmissionResponse(submission, activity.id)
       
-      // Check if submission was successful
-      if (!submission.success) {
-        console.error('❌ Submission failed:', submission.error || submission.message)
-        setDetailedFeedback(submission.feedback || submission.message || 'AI validation service is temporarily unavailable. Please try again.')
+      // Check if submission was successful - use completion_status instead of success property
+      if (submission.completion_status === 'failed' || submission.completion_status === 'pending') {
+        console.error('❌ Submission failed:', submission.feedback)
+        setDetailedFeedback(submission.feedback || 'AI validation service is temporarily unavailable. Please try again.')
         setIsCompleted(false)
         setShowCelebration(false)
         setShowAuraBot(false)
         
         // Show error alert
-        alert(submission.message || 'AI validation service is temporarily unavailable. Please try again in a moment.')
+        alert(submission.feedback || 'AI validation service is temporarily unavailable. Please try again in a moment.')
         return
       }
       
@@ -1053,7 +1064,10 @@ export default function ActivityEditorPage() {
                 className="flex items-center space-x-2 cursor-pointer hover:bg-[var(--surface-hover)] px-3 py-2 rounded-lg transition-colors duration-200"
                 onClick={() => setIsFeedbackDropdownOpen(!isFeedbackDropdownOpen)}
               >
-                <MessageCircle className="h-5 w-5 text-blue-600" />
+                <div className="relative">
+                  <MessageCircle className="h-5 w-5 text-blue-600" />
+                  {feedbackCount > 0 && <NotificationBadge count={feedbackCount} />}
+                </div>
                 <h3 className="text-lg font-medium text-[var(--text-primary)]">Feedback & Progress</h3>
                 
                 {/* Status Indicators */}

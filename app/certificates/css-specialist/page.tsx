@@ -53,7 +53,7 @@ const modules: Module[] = [
     duration: '3.5 hours',
     lessons: 15,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'css-grid',
@@ -62,7 +62,7 @@ const modules: Module[] = [
     duration: '4 hours',
     lessons: 18,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'typography',
@@ -71,7 +71,7 @@ const modules: Module[] = [
     duration: '2.5 hours',
     lessons: 10,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'colors-and-backgrounds',
@@ -80,7 +80,7 @@ const modules: Module[] = [
     duration: '3 hours',
     lessons: 12,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'transforms-and-animations',
@@ -89,7 +89,7 @@ const modules: Module[] = [
     duration: '4 hours',
     lessons: 16,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'responsive-design',
@@ -98,7 +98,7 @@ const modules: Module[] = [
     duration: '3.5 hours',
     lessons: 14,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'css-preprocessors',
@@ -107,7 +107,7 @@ const modules: Module[] = [
     duration: '3 hours',
     lessons: 12,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'css-frameworks',
@@ -116,7 +116,7 @@ const modules: Module[] = [
     duration: '2.5 hours',
     lessons: 10,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'browser-compatibility',
@@ -125,7 +125,7 @@ const modules: Module[] = [
     duration: '2 hours',
     lessons: 8,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'performance-optimization',
@@ -134,7 +134,7 @@ const modules: Module[] = [
     duration: '2.5 hours',
     lessons: 9,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'accessibility',
@@ -143,7 +143,7 @@ const modules: Module[] = [
     duration: '2 hours',
     lessons: 7,
     completed: false,
-    locked: true
+    locked: false
   },
   {
     id: 'final-project',
@@ -152,7 +152,7 @@ const modules: Module[] = [
     duration: '8 hours',
     lessons: 1,
     completed: false,
-    locked: true
+    locked: false
   }
 ];
 
@@ -300,7 +300,7 @@ export default function CSSSpecialistPage() {
                 <div className="flex items-center space-x-4">
                   <Button 
                     className="flex items-center space-x-2"
-                    disabled={module.locked}
+                    disabled={false}
                   >
                     {module.completed ? (
                       <>
@@ -315,12 +315,6 @@ export default function CSSSpecialistPage() {
                     )}
                   </Button>
                   
-                  {module.locked && (
-                    <span className="text-sm text-gray-500 flex items-center">
-                      <Lock className="w-4 h-4 mr-1" />
-                      Complete previous modules to unlock
-                    </span>
-                  )}
                 </div>
               </Card>
             </TabsContent>

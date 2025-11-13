@@ -134,48 +134,16 @@ export default function TutorialLayout({
                   const isCompleted = completionStatus ? (completionStatus.isCompleted || completionStatus.percentage >= 100) : (index < currentIndex)
                   const isCurrent = topic === currentTopic
                   
-                  // Determine if the lesson should be locked
-                  // Allow access to:
-                  // 1. The first lesson (always accessible)
-                  // 2. The current lesson (always accessible) 
-                  // 3. Any completed lesson (always accessible)
-                  // 4. The next lesson after the last completed lesson (to allow progression)
-                  let isLocked = false
-                  
-                  if (index === 0 || isCurrent || isCompleted) {
-                    // First lesson, current lesson, or completed lessons are never locked
-                    isLocked = false
-                  } else {
-                    // For other lessons, check if all previous lessons are completed
-                    let canAccess = true
-                    for (let i = 0; i < index; i++) {
-                      const prevStatus = lessonCompletionStatuses[i]
-                      if (!prevStatus?.isCompleted && prevStatus?.percentage < 100) {
-                        canAccess = false
-                        break
-                      }
-                    }
-                    isLocked = !canAccess
-                  }
+                  // All lessons are now fully unlocked - no restrictions
+                  const isLocked = false
                   
                   return (
                     <Link
                       key={topic}
-                      href={isLocked ? '#' : `#${topic.toLowerCase().replace(/\s+/g, '-')}`}
+                      href={`#${topic.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={(e) => {
                         e.preventDefault()
-                        if (isLocked) {
-                          // Find the last incomplete lesson before this one
-                          let incompleteLesson = null
-                          for (let i = 0; i < index; i++) {
-                            const prevStatus = lessonCompletionStatuses[i]
-                            if (!prevStatus?.isCompleted && prevStatus?.percentage < 100) {
-                              incompleteLesson = topics[i]
-                              break
-                            }
-                          }
-                          alert(`🔒 This lesson is locked. Please complete "${incompleteLesson || 'the previous lesson'}" first!`)
-                        } else if (!isCurrent && onLessonSelect) {
+                        if (!isCurrent && onLessonSelect) {
                           // Navigate to the selected lesson
                           onLessonSelect(index)
                         }
@@ -187,8 +155,6 @@ export default function TutorialLayout({
                           ? 'bg-[#9929EA] text-white shadow-md border-l-4 border-[#B84AE8]' 
                           : isCompleted
                           ? 'bg-green-50 text-green-700 hover:bg-green-100 border-l-4 border-green-400'
-                          : isLocked
-                          ? 'bg-[var(--surface-hover)] text-[var(--text-disabled)] cursor-not-allowed opacity-60'
                           : 'bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[#9929EA] hover:text-white border border-[var(--border)] hover:border-[#9929EA] hover:shadow-sm'
                         }
                       `}
@@ -201,8 +167,6 @@ export default function TutorialLayout({
                             ? 'bg-white text-[#9929EA] border-2 border-white' 
                             : isCompleted
                             ? 'bg-green-500 text-white'
-                            : isLocked
-                            ? 'bg-gray-300 text-gray-500'
                             : 'bg-[#9929EA] text-white group-hover:bg-white group-hover:text-[#9929EA]'
                           }
                         `}>
@@ -216,8 +180,6 @@ export default function TutorialLayout({
                               ? 'bg-white text-[#9929EA] border-2 border-white' 
                               : isCompleted
                               ? 'bg-green-500 text-white'
-                              : isLocked
-                              ? 'bg-gray-300 text-gray-500'
                               : 'bg-[#9929EA] text-white group-hover:bg-white group-hover:text-[#9929EA]'
                             }
                           `}>
@@ -230,9 +192,6 @@ export default function TutorialLayout({
                             )}
                             {isCompleted && (
                               <div className="text-xs text-green-600 mt-1">Completed</div>
-                            )}
-                            {isLocked && (
-                              <div className="text-xs text-gray-500 mt-1">Locked</div>
                             )}
                           </div>
                         </div>

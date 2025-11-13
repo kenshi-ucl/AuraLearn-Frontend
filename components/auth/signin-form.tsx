@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/components/ui/toast-notifications';
 
 interface SignInFormProps {
   onToggleForm: () => void;
@@ -21,6 +22,7 @@ export default function SignInForm({ onToggleForm }: SignInFormProps) {
   const [error, setError] = useState('');
   const { signIn, loading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,13 +41,34 @@ export default function SignInForm({ onToggleForm }: SignInFormProps) {
     try {
       const success = await signIn(formData.email, formData.password);
       if (success) {
+        // Show success toast
+        showToast({
+          title: 'Welcome back!',
+          message: 'Successfully signed in to your account',
+          type: 'success',
+          duration: 3000
+        });
         // Redirect to home page after successful sign in
         router.push('/');
       } else {
+        // Show error toast for invalid credentials
+        showToast({
+          title: 'Invalid Password',
+          message: 'The email or password you entered is incorrect. Please check and try again.',
+          type: 'error',
+          duration: 6000
+        });
         setError('Invalid email or password. Please try creating an account first or contact support.');
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
+      // Show error toast for system errors
+      showToast({
+        title: 'Sign In Failed',
+        message: err?.message || 'An error occurred during sign in. Please try again.',
+        type: 'error',
+        duration: 6000
+      });
       setError(err?.message || 'An error occurred during sign in. Please try again.');
     }
   };
