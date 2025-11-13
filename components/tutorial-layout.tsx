@@ -49,7 +49,7 @@ export default function TutorialLayout({
         {/* Left Sidebar - Navigation */}
         <aside className={`
           fixed lg:sticky lg:top-16 inset-y-0 left-0 z-30 transform transition-all duration-300 ease-in-out lg:h-[calc(100vh-4rem)] flex-shrink-0
-          ${sidebarCollapsed ? 'w-20' : 'w-80'}
+          ${sidebarCollapsed ? 'w-20' : 'w-64'}
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="h-full bg-[var(--surface-hover)] border-r border-[var(--border)] overflow-hidden flex flex-col shadow-lg relative">

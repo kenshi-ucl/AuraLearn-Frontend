@@ -33,7 +33,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-full lg:w-80 space-y-4">
+    <aside className="w-full lg:w-64 space-y-4">
       {/* Enhanced Learning Analytics */}
       <AntCard
         title={
