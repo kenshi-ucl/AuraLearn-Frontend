@@ -8,6 +8,14 @@ export function debugSubmissionResponse(submission: any, activityId: string | nu
   console.log('📊 score:', submission.score);
   console.log('📝 completion_status:', submission.completion_status);
   console.log('🔢 attempt_number:', submission.attempt_number);
+  console.log('🤖 ai_powered:', submission.ai_powered);
+  
+  // Check for error conditions
+  if (submission.success === false) {
+    console.error('❌ SUBMISSION FAILED - Backend returned error');
+    console.error('🚫 Error:', submission.error || submission.message);
+    console.error('⚠️ NO CELEBRATION should be shown!');
+  }
   
   // Log validation details
   if (submission.validation_summary) {
@@ -18,10 +26,10 @@ export function debugSubmissionResponse(submission: any, activityId: string | nu
     });
   }
   
-  // Highlight the issue
-  if (submission.is_completed === false) {
+  // Highlight the completion status
+  if (submission.success === true && submission.is_completed === false) {
     console.warn('⚠️ ACTIVITY NOT COMPLETED - Should NOT show celebration!');
-  } else if (submission.is_completed === true) {
+  } else if (submission.success === true && submission.is_completed === true) {
     console.log('🎉 Activity completed - Celebration is appropriate');
   }
   

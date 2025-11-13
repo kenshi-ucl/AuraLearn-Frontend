@@ -253,7 +253,7 @@ export async function submitActivity(activityId: string | number, userCode: stri
         console.warn('Could not get user ID for submission');
     }
 
-    return request(`/api/activities/${activityId}/submit`, {
+    const response = await request<any>(`/api/activities/${activityId}/submit`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -264,6 +264,13 @@ export async function submitActivity(activityId: string | number, userCode: stri
             user_id: userId || 1 // Send user ID for backend isolation
         }),
     });
+    
+    // Check if backend returned an error even with 200 status
+    if (response.success === false) {
+        throw new Error(response.message || response.error || 'Submission failed');
+    }
+    
+    return response;
 }
 
 // Get activity submission status for the current user

@@ -633,9 +633,22 @@ export default function ActivityEditorPage() {
       // Debug the submission response
       debugSubmissionResponse(submission, activity.id)
       
+      // Check if submission was successful
+      if (!submission.success) {
+        console.error('❌ Submission failed:', submission.error || submission.message)
+        setDetailedFeedback(submission.feedback || submission.message || 'AI validation service is temporarily unavailable. Please try again.')
+        setIsCompleted(false)
+        setShowCelebration(false)
+        setShowAuraBot(false)
+        
+        // Show error alert
+        alert(submission.message || 'AI validation service is temporarily unavailable. Please try again in a moment.')
+        return
+      }
+      
       // Update local state with submission results
-      setAttempts(submission.attempt_number)
-      setScore(submission.score)
+      setAttempts(submission.attempt_number || 1)
+      setScore(submission.score || 0)
       setValidationResults(submission.validation_summary)
       setDetailedFeedback(submission.feedback)
       setInstructionProgress(submission.instruction_progress)
