@@ -9,7 +9,6 @@ export interface DashboardStats {
     streak: number;
     completedCourses: number;
     totalCourses: number;
-    rank: number;
     currentCourse: string | null;
     recentLessons: {
         title: string;

@@ -20,19 +20,15 @@ import Image from 'next/image';
 import {
   getUserAchievements,
   getAchievementStats,
-  getAchievementsByCourse,
   getCertificateTypeDisplayName,
   getBadgeDisplayName,
   getBadgeColor,
-  type Achievement,
-  type CourseAchievementSummary
+  type Achievement
 } from '@/lib/achievements-api';
-import HTML5Logo from '@/app/assets/HTML5.png';
 
 export default function AchievementsPage() {
   const { user, isAuthenticated, loading } = useAuth();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [courseAchievements, setCourseAchievements] = useState<CourseAchievementSummary[]>([]);
   const [stats, setStats] = useState({
     total_achievements: 0,
     certificates_earned: 0,
@@ -46,7 +42,6 @@ export default function AchievementsPage() {
     recent_achievements: [] as Achievement[]
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCourse, setSelectedCourse] = useState<string>('all');
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -59,7 +54,7 @@ export default function AchievementsPage() {
       setIsLoading(true);
       
       // Load all achievement data in parallel
-      const [achievementsData, statsData, coursesData] = await Promise.all([
+      const [achievementsData, statsData] = await Promise.all([
         getUserAchievements().catch(() => ({ achievements: [] })),
         getAchievementStats().catch(() => ({
           total_achievements: 0,
@@ -67,21 +62,11 @@ export default function AchievementsPage() {
           total_points: 0,
           badges: { bronze: 0, silver: 0, gold: 0, platinum: 0 },
           recent_achievements: []
-        })),
-        getAchievementsByCourse().catch(() => ({ courses: [] }))
+        }))
       ]);
 
       setAchievements(achievementsData.achievements || []);
       setStats(statsData);
-      setCourseAchievements(coursesData.courses || []);
-      
-      // Auto-select HTML5 course if available
-      const html5Course = coursesData.courses?.find(
-        c => c.course_slug === 'html5-tutorial' || c.course_title.toLowerCase().includes('html')
-      );
-      if (html5Course) {
-        setSelectedCourse(html5Course.course_id.toString());
-      }
     } catch (error) {
       console.error('Failed to load achievements:', error);
     } finally {
@@ -101,12 +86,6 @@ export default function AchievementsPage() {
     redirect('/signin');
   }
 
-  // Filter achievements based on selected course
-  const filteredAchievements = selectedCourse === 'all' 
-    ? achievements 
-    : courseAchievements.find(c => c.course_id.toString() === selectedCourse)?.achievements || [];
-
-  const selectedCourseData = courseAchievements.find(c => c.course_id.toString() === selectedCourse);
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -135,7 +114,7 @@ export default function AchievementsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-[var(--surface)] rounded-xl shadow-md p-6 border border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
@@ -144,18 +123,6 @@ export default function AchievementsPage() {
               </div>
               <div className="bg-purple-100 rounded-full p-3">
                 <Award className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[var(--surface)] rounded-xl shadow-md p-6 border border-[var(--border)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Certificates</p>
-                <p className="text-3xl font-bold text-blue-600">{stats.certificates_earned}</p>
-              </div>
-              <div className="bg-blue-100 rounded-full p-3">
-                <Medal className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </div>
@@ -175,8 +142,8 @@ export default function AchievementsPage() {
           <div className="bg-[var(--surface)] rounded-xl shadow-md p-6 border border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Platinum Badges</p>
-                <p className="text-3xl font-bold text-yellow-600">{stats.badges.platinum}</p>
+                <p className="text-sm text-[var(--text-secondary)] mb-1">Total Badges</p>
+                <p className="text-3xl font-bold text-yellow-600">{stats.badges.bronze + stats.badges.silver + stats.badges.gold + stats.badges.platinum}</p>
               </div>
               <div className="bg-yellow-100 rounded-full p-3">
                 <Star className="h-6 w-6 text-yellow-600" />
@@ -207,127 +174,16 @@ export default function AchievementsPage() {
           </div>
         </div>
 
-        {/* Course Selection */}
-        <div className="bg-[var(--surface)] rounded-xl shadow-md p-6 mb-8 border border-[var(--border)]">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 flex items-center">
-            <BookOpen className="h-6 w-6 mr-2 text-purple-600" />
-            Filter by Course
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => setSelectedCourse('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                selectedCourse === 'all'
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                  : 'bg-[var(--surface-hover)] text-[var(--text-primary)] hover:bg-[var(--surface-active)]'
-              }`}
-            >
-              All Courses
-            </button>
-            {courseAchievements.map((course) => (
-              <button
-                key={course.course_id}
-                onClick={() => setSelectedCourse(course.course_id.toString())}
-                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2 ${
-                  selectedCourse === course.course_id.toString()
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                    : 'bg-[var(--surface-hover)] text-[var(--text-primary)] hover:bg-[var(--surface-active)]'
-                }`}
-              >
-                {course.course_slug === 'html5-tutorial' && (
-                  <Image 
-                    src={HTML5Logo} 
-                    alt="HTML5" 
-                    width={20} 
-                    height={20}
-                    className="w-5 h-5"
-                  />
-                )}
-                <span>{course.course_title}</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
-                  {course.total_achievements}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Course Progress Summary */}
-        {selectedCourseData && selectedCourse !== 'all' && (
-          <div className="bg-[var(--surface)] rounded-xl shadow-md p-6 mb-8 border border-[var(--border)]">
-            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 flex items-center">
-              <Target className="h-6 w-6 mr-2 text-purple-600" />
-              {selectedCourseData.course_title} Progress
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="relative w-32 h-32 mx-auto mb-3">
-                  <svg className="transform -rotate-90 w-32 h-32">
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="var(--border)"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="url(#gradient)"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 56}`}
-                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - selectedCourseData.progress_percentage / 100)}`}
-                      strokeLinecap="round"
-                    />
-                    <defs>
-                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#9333EA" />
-                        <stop offset="100%" stopColor="#3B82F6" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-purple-600">
-                      {Math.round(selectedCourseData.progress_percentage)}%
-                    </span>
-                  </div>
-                </div>
-                <p className="text-sm text-[var(--text-secondary)]">Course Progress</p>
-              </div>
-              
-              <div className="text-center">
-                <p className="text-4xl font-bold text-blue-600 mb-2">
-                  {selectedCourseData.lessons_completed}/{selectedCourseData.total_lessons}
-                </p>
-                <p className="text-sm text-[var(--text-secondary)]">Lessons Completed</p>
-              </div>
-              
-              <div className="text-center">
-                <p className="text-4xl font-bold text-[var(--accent-success)] mb-2">
-                  {selectedCourseData.certificates_earned}
-                </p>
-                <p className="text-sm text-[var(--text-secondary)]">Certificates Earned</p>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Achievements List */}
+        {/* Recent Achievements - Primary Section */}
         <div className="bg-[var(--surface)] rounded-xl shadow-md p-6 border border-[var(--border)]">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center">
-            <Trophy className="h-6 w-6 mr-2 text-purple-600" />
-            {selectedCourse === 'all' ? 'All Achievements' : `${selectedCourseData?.course_title} Achievements`}
-          </h2>
-
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--brand-primary)] mx-auto"></div>
               <p className="text-[var(--text-tertiary)] mt-4">Loading achievements...</p>
             </div>
-          ) : filteredAchievements.length === 0 ? (
+          ) : achievements.length === 0 ? (
             <div className="text-center py-12">
               <Award className="h-16 w-16 text-[var(--text-disabled)] mx-auto mb-4" />
               <p className="text-[var(--text-tertiary)] text-lg mb-2">No achievements yet</p>
@@ -342,7 +198,7 @@ export default function AchievementsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAchievements.map((achievement) => (
+              {achievements.map((achievement) => (
                 <div
                   key={achievement.id}
                   className="bg-[var(--brand-primary-light)] rounded-xl p-6 border-2 border-[var(--brand-primary)]/30 hover:border-[var(--brand-primary)]/60 transition-all hover:shadow-lg"
@@ -417,8 +273,8 @@ export default function AchievementsPage() {
           )}
         </div>
 
-        {/* Recent Achievements */}
-        {stats.recent_achievements.length > 0 && selectedCourse === 'all' && (
+        {/* Recent Achievements Section */}
+        {stats.recent_achievements.length > 0 && (
           <div className="bg-[var(--surface)] rounded-xl shadow-md p-6 mt-8 border border-[var(--border)]">
             <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center">
               <TrendingUp className="h-6 w-6 mr-2 text-purple-600" />

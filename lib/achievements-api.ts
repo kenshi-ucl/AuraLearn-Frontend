@@ -41,23 +41,6 @@ export interface UserProgress {
     updated_at: string;
 }
 
-export interface CourseAchievementSummary {
-    course_id: number;
-    course_title: string;
-    course_slug: string;
-    total_achievements: number;
-    certificates_earned: number;
-    progress_percentage: number;
-    achievements: Achievement[];
-    lessons_completed: number;
-    total_lessons: number;
-    badges: {
-        bronze: number;
-        silver: number;
-        gold: number;
-        platinum: number;
-    };
-}
 
 // Helper function to make API requests with authentication
 async function request(endpoint: string, options: RequestInit = {}): Promise<any> {
@@ -120,31 +103,6 @@ export async function getUserAchievements(): Promise<{ achievements: Achievement
     });
 }
 
-/**
- * Get achievements for a specific course
- */
-export async function getCourseAchievements(courseId: string | number): Promise<CourseAchievementSummary> {
-    // Get user ID from localStorage
-    let userId: string | undefined;
-    try {
-        const userData = localStorage.getItem('auralearn_user');
-        if (userData) {
-            const user = JSON.parse(userData);
-            userId = user.id?.toString();
-        }
-    } catch (e) {
-        console.warn('Could not get user ID for course achievements');
-    }
-
-    const params = new URLSearchParams();
-    if (userId) {
-        params.append('user_id', userId);
-    }
-
-    return request(`/api/courses/${courseId}/achievements?${params.toString()}`, {
-        method: 'GET',
-    });
-}
 
 /**
  * Get user progress for all courses
@@ -209,31 +167,6 @@ export async function getAchievementStats(): Promise<{
     });
 }
 
-/**
- * Get achievements grouped by course
- */
-export async function getAchievementsByCourse(): Promise<{ courses: CourseAchievementSummary[] }> {
-    // Get user ID from localStorage
-    let userId: string | undefined;
-    try {
-        const userData = localStorage.getItem('auralearn_user');
-        if (userData) {
-            const user = JSON.parse(userData);
-            userId = user.id?.toString();
-        }
-    } catch (e) {
-        console.warn('Could not get user ID for achievements by course');
-    }
-
-    const params = new URLSearchParams();
-    if (userId) {
-        params.append('user_id', userId);
-    }
-
-    return request(`/api/achievements/by-course?${params.toString()}`, {
-        method: 'GET',
-    });
-}
 
 /**
  * Helper function to format badge level to display name

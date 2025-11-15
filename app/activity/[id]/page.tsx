@@ -846,7 +846,9 @@ export default function ActivityEditorPage() {
     try {
         // Get current HTML code and activity instructions for context
         const htmlContext = code || undefined
-        const instructionsContext = activity?.instructions ? activity.instructions.join('\n') : undefined
+        const instructionsContext = activity ? 
+          `Activity Title: ${activity.title}\nActivity Description: ${activity.description}\n\nInstructions:\n${activity.instructions.map((instruction, index) => `${index + 1}. ${instruction}`).join('\n')}\n\nExpected Output: ${activity.expectedOutput}`
+          : undefined
         
         // Build feedback context from previous submissions
         let feedbackContext: string | undefined = undefined
@@ -1473,8 +1475,8 @@ export default function ActivityEditorPage() {
                                 <Bot className="h-4 w-4 text-white" />
                               </div>
                               <div className="flex-1">
-                                <div className="bg-white rounded-2xl rounded-tl-lg px-4 py-3 shadow-sm border border-[var(--divider)] max-w-[85%]">
-                                  <p className="text-gray-800 text-sm leading-relaxed">{msg.message}</p>
+                                <div className="bg-[var(--surface)] rounded-2xl rounded-tl-lg px-4 py-3 shadow-sm border border-[var(--divider)] max-w-[85%]">
+                                  <p className="text-[var(--text-primary)] text-sm leading-relaxed">{msg.message}</p>
                                 </div>
                                 <div className="text-xs text-[var(--text-tertiary)] mt-1 px-2">
                                   {msg.timestamp.toLocaleTimeString()}
@@ -1504,7 +1506,7 @@ export default function ActivityEditorPage() {
                             <Bot className="h-4 w-4 text-white" />
                           </div>
                           <div className="flex-1">
-                            <div className="bg-white rounded-2xl rounded-tl-lg px-4 py-3 shadow-sm border border-gray-100">
+                            <div className="bg-[var(--surface)] rounded-2xl rounded-tl-lg px-4 py-3 shadow-sm border border-[var(--divider)]">
                               <div className="flex space-x-1">
                                 <div className="w-2 h-2 bg-[var(--text-disabled)] rounded-full animate-bounce"></div>
                                 <div className="w-2 h-2 bg-[var(--text-disabled)] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -1518,7 +1520,7 @@ export default function ActivityEditorPage() {
                   </div>
 
                   {/* Chat Input */}
-                  <div className="p-4 border-t border-[var(--border)] bg-white">
+                  <div className="p-4 border-t border-[var(--border)] bg-[var(--surface)]">
                     {/* Error display */}
                     {auraBotError && (
                       <div className="mb-3 p-2 bg-red-100 border border-red-300 rounded-lg text-red-700 dark:text-red-300 text-sm flex items-center justify-between">
@@ -1548,7 +1550,7 @@ export default function ActivityEditorPage() {
                             ? "Question limit reached..." 
                             : "Ask AuraBot for help with this activity..."
                         }
-                        className="flex-1 px-3 py-2 bg-[var(--surface-active)] rounded-full border-0 focus:ring-2 focus:ring-purple-500 focus:bg-white transition-colors text-sm"
+                        className="flex-1 px-3 py-2 bg-[var(--surface-active)] rounded-full border-0 focus:ring-2 focus:ring-purple-500 focus:bg-[var(--surface)] transition-colors text-sm text-[var(--text-primary)]"
                         disabled={auraBotLoading || !auraBotInitialized || auraBotSessionStatus?.can_ask === false}
                       />
                       <button 
@@ -1583,7 +1585,7 @@ export default function ActivityEditorPage() {
                   <span className="text-xs text-[var(--text-tertiary)]">Live Preview</span>
                 </div>
                 
-                <div className="flex-1 bg-white">
+                <div className="flex-1 bg-[var(--surface)]">
                   {output ? (
                     <iframe
                       srcDoc={output}
@@ -1746,7 +1748,7 @@ export default function ActivityEditorPage() {
             <span className="text-xs text-[var(--text-tertiary)]">Live Preview</span>
           </div>
           
-          <div className="flex-1 bg-white">
+          <div className="flex-1 bg-[var(--surface)]">
             {output ? (
               <iframe
                 srcDoc={
@@ -1856,7 +1858,7 @@ export default function ActivityEditorPage() {
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="bg-white border-t border-[var(--border)] px-4 py-3">
+      <div className="bg-[var(--surface)] border-t border-[var(--border)] px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="text-sm text-[var(--text-secondary)] flex items-center space-x-4">
             {!isCompleted ? (

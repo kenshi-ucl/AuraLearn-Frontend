@@ -100,30 +100,23 @@ export default function DashboardPage() {
     {
       label: 'Total Points',
       value: dashboardData.totalPoints.toLocaleString(),
-      icon: <Star className="h-6 w-6 text-yellow-500" />,
+      icon: <Star className="h-8 w-8 text-yellow-500" />,
       change: `+${dashboardData.pointsThisWeek} this week`,
       color: 'yellow'
     },
     {
       label: 'Current Streak',
       value: `${dashboardData.streak} days`,
-      icon: <Zap className="h-6 w-6 text-orange-500" />,
+      icon: <Zap className="h-8 w-8 text-orange-500" />,
       change: 'Keep it up!',
       color: 'orange'
     },
     {
       label: 'Courses Completed',
       value: `${dashboardData.completedCourses}/${dashboardData.totalCourses}`,
-      icon: <BookOpen className="h-6 w-6 text-blue-500" />,
+      icon: <BookOpen className="h-8 w-8 text-blue-500" />,
       change: `${progressPercentage}% complete`,
       color: 'blue'
-    },
-    {
-      label: 'Global Rank',
-      value: `#${dashboardData.rank}`,
-      icon: <Trophy className="h-6 w-6 text-purple-500" />,
-      change: 'Top 10%',
-      color: 'purple'
     }
   ];
 
@@ -166,22 +159,47 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats Section with Enhanced Design */}
+        <div className="relative mb-10">
+          {/* Background decoration */}
+          <div className="" />
+          
+          {/* Stats Grid - Optimized for 3 cards */}
+          <div className="relative px-10 py-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-[var(--surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[var(--text-secondary)]">{stat.label}</p>
-                  <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">{stat.value}</p>
-                  <p className="text-sm text-[var(--text-tertiary)] mt-1">{stat.change}</p>
-                </div>
-                <div className={`bg-${stat.color}-100 p-3 rounded-lg`}>
+            <div 
+              key={index} 
+              className="group bg-[var(--surface)] rounded-2xl shadow-sm hover:shadow-lg border border-[var(--border)] p-6 sm:p-8 transition-all duration-300 hover:border-purple-300 hover:-translate-y-1"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                {/* Icon with enhanced background */}
+                <div className={`w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br ${
+                  stat.color === 'yellow' ? 'from-yellow-100 to-yellow-200' :
+                  stat.color === 'orange' ? 'from-orange-100 to-orange-200' :
+                  'from-blue-100 to-blue-200'
+                } group-hover:scale-110 transition-transform duration-300`}>
                   {stat.icon}
+                </div>
+                
+                {/* Content with improved typography */}
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                    {stat.label}
+                  </p>
+                  <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-[var(--text-tertiary)] font-medium">
+                    {stat.change}
+                  </p>
                 </div>
               </div>
             </div>
           ))}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

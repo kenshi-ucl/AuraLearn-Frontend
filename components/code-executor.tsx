@@ -73,9 +73,9 @@ export default function CodeExecutor({
   }
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="w-full bg-[var(--surface)] rounded-lg shadow-sm border border-[var(--border)] overflow-hidden"> 
       {/* Header with macOS-style buttons and title */}
-      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
+      <div className="bg-[var(--surface-hover)] border-b border-[var(--border)] px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
@@ -83,7 +83,7 @@ export default function CodeExecutor({
               <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
             </div>
-            <span className="text-sm font-semibold text-gray-700">Try it Yourself</span>
+            <span className="text-sm font-semibold text-[var(--text-primary)]">Try it Yourself</span>
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -110,14 +110,14 @@ export default function CodeExecutor({
 
       {/* Tab Navigation - Only show when not in split view */}
       {!splitView && (
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-[var(--surface)] border-b border-[var(--border)]">
           <div className="flex">
             <button
               onClick={() => setActiveTab('editor')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'editor'
-                  ? 'border-green-500 text-green-600 bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-green-500 text-green-600 bg-[var(--surface)]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Code className="w-4 h-4 inline mr-2" />
@@ -127,8 +127,8 @@ export default function CodeExecutor({
               onClick={() => setActiveTab('output')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'output'
-                  ? 'border-green-500 text-green-600 bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-green-500 text-green-600 bg-[var(--surface)]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Eye className="w-4 h-4 inline mr-2" />
@@ -144,9 +144,9 @@ export default function CodeExecutor({
           /* Split View - Editor and Result side by side */
           <div className="flex">
             {/* Left Side - Code Editor */}
-            <div className="w-1/2 bg-white border-r border-gray-200">
-              <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            <div className="w-1/2 bg-[var(--surface)] border-r border-[var(--border)]">
+              <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface)] border-b border-[var(--border)]">
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                   {language.toUpperCase()} Editor
                 </span>
               </div>
@@ -154,7 +154,7 @@ export default function CodeExecutor({
                 <textarea
                   value={code}
                   onChange={(e) => handleCodeChange(e.target.value)}
-                  className="w-full h-96 font-mono text-sm bg-gray-50 text-gray-800 border-none outline-none resize-none code-textarea"
+                  className="w-full h-96 font-mono text-sm bg-[var(--surface)] text-[var(--text-primary)] border-none outline-none resize-none code-textarea"
                   style={{
                     lineHeight: '1.5rem',
                     tabSize: 2,
@@ -166,9 +166,9 @@ export default function CodeExecutor({
                   spellCheck={false}
                 />
                 {/* Line Numbers */}
-                <div className="absolute left-0 top-0 h-full w-12 bg-gray-50 border-r border-gray-100 pointer-events-none">
+                <div className="absolute left-0 top-0 h-full w-12 bg-[var(--surface)] border-r border-[var(--border)] pointer-events-none">
                   <div 
-                    className="font-mono text-sm text-gray-400 line-numbers-container"
+                    className="font-mono text-sm text-[var(--text-tertiary)] line-numbers-container"
                     style={{
                       paddingTop: '1rem',
                       paddingBottom: '1rem',
@@ -198,14 +198,14 @@ export default function CodeExecutor({
             </div>
 
             {/* Right Side - Result */}
-            <div className="w-1/2 bg-white">
-              <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            <div className="w-1/2 bg-[var(--surface)]">
+              <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface)] border-b border-[var(--border)]">
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                   Output Result
                 </span>
-                <span className="text-xs text-gray-500">Live Preview</span>
+                <span className="text-xs text-[var(--text-secondary)]">Live Preview</span>
               </div>
-              <div className="h-96 bg-white">
+              <div className="h-96 bg-[var(--surface)]">
                 {language === 'html' ? (
                   <iframe
                     srcDoc={
@@ -236,9 +236,9 @@ export default function CodeExecutor({
                   />
                 ) : (
                   <div className="p-4 h-full overflow-auto">
-                    <div className="bg-gray-50 border border-gray-100 rounded p-4 h-full">
-                      <div className="text-sm text-gray-600 mb-2">Code Preview:</div>
-                      <pre className="text-xs text-gray-800 font-mono whitespace-pre-wrap overflow-auto">
+                    <div className="bg-[var(--surface)] border border-[var(--border)] rounded p-4 h-full">
+                      <div className="text-sm text-[var(--text-secondary)] mb-2">Code Preview:</div>
+                      <pre className="text-xs text-[var(--text-primary)] font-mono whitespace-pre-wrap overflow-auto">
                         {code || 'No code to display'}
                       </pre>
                     </div>
@@ -251,9 +251,9 @@ export default function CodeExecutor({
           /* Single View - Tab based */
           activeTab === 'editor' ? (
             /* Code Editor Panel */
-            <div className="bg-white">
-              <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            <div className="bg-[var(--surface)]">
+              <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface)] border-b border-[var(--border)]">
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                   {language.toUpperCase()} Editor
                 </span>
               </div>
@@ -261,7 +261,7 @@ export default function CodeExecutor({
                 <textarea
                   value={code}
                   onChange={(e) => handleCodeChange(e.target.value)}
-                  className="w-full h-96 font-mono text-sm bg-gray-50 text-gray-800 border-none outline-none resize-none code-textarea"
+                  className="w-full h-96 font-mono text-sm bg-[var(--surface)] text-[var(--text-primary)] border-none outline-none resize-none code-textarea"
                   style={{
                     lineHeight: '1.5rem',
                     tabSize: 2,
@@ -273,9 +273,9 @@ export default function CodeExecutor({
                   spellCheck={false}
                 />
                 {/* Line Numbers */}
-                <div className="absolute left-0 top-0 h-full w-12 bg-gray-50 border-r border-gray-100 pointer-events-none">
+                <div className="absolute left-0 top-0 h-full w-12 bg-[var(--surface)] border-r border-[var(--border)] pointer-events-none">
                   <div 
-                    className="font-mono text-sm text-gray-400 line-numbers-container"
+                    className="font-mono text-sm text-[var(--text-tertiary)] line-numbers-container"
                     style={{
                       paddingTop: '1rem',
                       paddingBottom: '1rem',
@@ -305,14 +305,14 @@ export default function CodeExecutor({
             </div>
           ) : (
             /* Output Panel */
-            <div className="bg-white">
-              <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-100">
-                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            <div className="bg-[var(--surface)]">
+              <div className="flex items-center justify-between px-4 py-2 bg-[var(--surface)] border-b border-[var(--border)]">
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                   Output Result
                 </span>
-                <span className="text-xs text-gray-500">Live Preview</span>
+                <span className="text-xs text-[var(--text-secondary)]">Live Preview</span>
               </div>
-              <div className="h-96 bg-white">
+              <div className="h-96 bg-[var(--surface)]">
                 {language === 'html' ? (
                   <iframe
                     srcDoc={
@@ -343,9 +343,9 @@ export default function CodeExecutor({
                   />
                 ) : (
                   <div className="p-4 h-full overflow-auto">
-                    <div className="bg-gray-50 border border-gray-100 rounded p-4 h-full">
-                      <div className="text-sm text-gray-600 mb-2">Code Preview:</div>
-                      <pre className="text-xs text-gray-800 font-mono whitespace-pre-wrap overflow-auto">
+                    <div className="bg-[var(--surface)] border border-[var(--border)] rounded p-4 h-full">
+                      <div className="text-sm text-[var(--text-secondary)] mb-2">Code Preview:</div>
+                      <pre className="text-xs text-[var(--text-primary)] font-mono whitespace-pre-wrap overflow-auto">
                         {code || 'No code to display'}
                       </pre>
                     </div>
@@ -358,7 +358,7 @@ export default function CodeExecutor({
       </div>
 
       {/* Bottom Action Bar with Run button only */}
-      <div className="bg-white border-t border-gray-100 px-4 py-3">
+      <div className="bg-[var(--surface)] border-t border-[var(--border)] px-4 py-3">
         <div className="flex items-center justify-end">
           <Button
             onClick={executeCode}
