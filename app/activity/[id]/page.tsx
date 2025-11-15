@@ -127,6 +127,176 @@ const ConfettiPiece = ({ delay, duration, left, index }: { delay: number; durati
   )
 }
 
+// Submission Result Modal Component
+const SubmissionResultModal = ({ isVisible, onClose, data }: {
+  isVisible: boolean,
+  onClose: () => void,
+  data: any
+}) => {
+  if (!isVisible || !data) return null
+
+  const isSuccess = data.completion_status === 'completed'
+  
+  return (
+    <div 
+      className={`fixed inset-0 flex items-center justify-center p-4 z-[10000] ${isVisible ? 'block' : 'hidden'}`}
+      style={{ zIndex: 10000 }}
+    >
+      {/* Blurred Background */}
+      <div 
+        className="absolute inset-0 backdrop-blur-md bg-black bg-opacity-50"
+        onClick={onClose}
+      />
+      
+      {/* Modal Content */}
+      <div 
+        className="bg-[var(--surface)] bg-opacity-95 dark:bg-opacity-98 backdrop-blur-sm rounded-3xl p-8 max-w-md w-full mx-4 text-center relative overflow-hidden shadow-2xl border border-[var(--border)] border-opacity-30 z-20"
+        style={{
+          animation: 'submission-modal-popup 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+        }}
+      >
+        {/* Background Decoration */}
+        <div className={`absolute inset-0 ${isSuccess ? 'bg-gradient-to-br from-green-50 via-emerald-25 to-teal-50' : 'bg-gradient-to-br from-red-50 via-orange-25 to-yellow-50'} opacity-60 rounded-3xl`}></div>
+        
+        {/* Content */}
+        <div className="relative z-10">
+          {/* Icon */}
+          <div className="mb-6 relative">
+            <div 
+              className={`mx-auto h-24 w-24 ${isSuccess ? 'bg-green-100' : 'bg-red-100'} rounded-full flex items-center justify-center`}
+              style={{
+                animation: 'icon-bounce 0.6s ease-out 0.2s',
+                boxShadow: `0 0 0 12px ${isSuccess ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)'}`
+              }}
+            >
+              {isSuccess ? (
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              ) : (
+                <span className="text-4xl">😢</span>
+              )}
+            </div>
+          </div>
+          
+          {/* Title */}
+          <h2 className={`text-2xl font-bold mb-3 ${isSuccess ? 'text-green-800' : 'text-red-800'}`}>
+            {isSuccess ? 'Great Job!' : 'Not Quite Right'}
+          </h2>
+          
+          {/* Message */}
+          <p className="text-[var(--text-secondary)] mb-6">
+            {isSuccess 
+              ? `You've successfully completed the activity!`
+              : 'Your code is incorrect. Please try again.'}
+          </p>
+          
+          {/* Validation Results */}
+          {data.validation_summary && (
+            <div className="mb-6 text-left bg-white dark:bg-gray-800 rounded-lg p-4 shadow-inner">
+              <h3 className="font-semibold text-sm text-[var(--text-primary)] mb-2">Validation Results:</h3>
+              
+              {/* Overall Progress */}
+              {data.validation_summary.overall && (
+                <div className="mb-3">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-[var(--text-secondary)]">Overall Progress</span>
+                    <span className={`text-xs font-medium ${
+                      data.validation_summary.overall.passed === data.validation_summary.overall.total 
+                        ? 'text-green-600' 
+                        : 'text-orange-600'
+                    }`}>
+                      {data.validation_summary.overall.passed}/{data.validation_summary.overall.total} Checks Passed
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        data.validation_summary.overall.passed === data.validation_summary.overall.total 
+                          ? 'bg-green-500' 
+                          : 'bg-orange-500'
+                      }`}
+                      style={{ width: `${(data.validation_summary.overall.passed / data.validation_summary.overall.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Individual Checks */}
+              <div className="space-y-2">
+                {data.validation_summary.structure_validation && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-secondary)]">Structure Validation</span>
+                    <span className={data.validation_summary.structure_validation.valid ? 'text-green-600' : 'text-red-600'}>
+                      {data.validation_summary.structure_validation.valid ? '✓ Passed' : '✗ Failed'}
+                    </span>
+                  </div>
+                )}
+                
+                {data.validation_summary.required_elements && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-secondary)]">Required Elements</span>
+                    <span className={`${
+                      data.validation_summary.required_elements.found === data.validation_summary.required_elements.required 
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {data.validation_summary.required_elements.found}/{data.validation_summary.required_elements.required}
+                    </span>
+                  </div>
+                )}
+                
+                {data.validation_summary.content_validation && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-secondary)]">Content Validation</span>
+                    <span className={data.validation_summary.content_validation.valid ? 'text-green-600' : 'text-red-600'}>
+                      {data.validation_summary.content_validation.valid ? '✓ Passed' : '✗ Failed'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {/* Attempt Number */}
+          <p className="text-xs text-[var(--text-tertiary)] mb-4">
+            Attempt #{data.attempt_number || 1}
+          </p>
+          
+          {/* Button */}
+          <Button
+            onClick={onClose}
+            className={`w-full ${isSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
+          >
+            {isSuccess ? 'Continue' : 'Try Again'}
+          </Button>
+        </div>
+      </div>
+      
+      <style jsx>{`
+        @keyframes submission-modal-popup {
+          0% {
+            transform: scale(0.8) translateY(20px);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes icon-bounce {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.1);
+          }
+        }
+      `}</style>
+    </div>
+  )
+}
+
 // Celebration overlay component
 const CelebrationOverlay = ({ 
   isVisible, 
@@ -316,6 +486,8 @@ export default function ActivityEditorPage() {
   const [maxAttemptsReached, setMaxAttemptsReached] = useState(false)
   const [isInstructionDropdownOpen, setIsInstructionDropdownOpen] = useState(false)
   const [isFeedbackDropdownOpen, setIsFeedbackDropdownOpen] = useState(false)
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false)
+  const [submissionModalData, setSubmissionModalData] = useState<any>(null)
   const [showAuraBot, setShowAuraBot] = useState(false) // Only show after 3 attempts
   const [auraBotMinimized, setAuraBotMinimized] = useState(false) // Track minimize state
   const [auraBotMessages, setAuraBotMessages] = useState<Array<{
@@ -652,8 +824,9 @@ export default function ActivityEditorPage() {
         setShowCelebration(false)
         setShowAuraBot(false)
         
-        // Show error alert
-        alert(submission.feedback || 'AI validation service is temporarily unavailable. Please try again in a moment.')
+        // Show submission modal for failed attempts
+        setSubmissionModalData(submission)
+        setShowSubmissionModal(true)
         return
       }
       
@@ -676,9 +849,17 @@ export default function ActivityEditorPage() {
         setShowAuraBot(false) // Keep hidden for attempts 1-2
       }
       
+      // Show submission modal first for all non-completed submissions
+      if (isCompleted !== true) {
+        // Show the submission modal for failed/incomplete attempts
+        setSubmissionModalData(submission)
+        setShowSubmissionModal(true)
+      }
+
       // Handle different completion statuses with strict type checking
       if (isCompleted === true) {
         console.log('🎉 Activity completed successfully!')
+        // Show celebration overlay for successful completion
         setShowCelebration(true)
         setShowAuraBot(false) // Hide AuraBot when activity is completed
         setAuraBotMinimized(false) // Reset minimized state on completion
@@ -694,9 +875,9 @@ export default function ActivityEditorPage() {
         if (submission.hints && submission.hints.length > 0) {
           setShowHints(true)
           setCurrentHint(0) // Reset to first hint
-          // Only auto-open feedback dropdown on first attempt
-          if (submission.attempt_number === 1) {
-            setIsFeedbackDropdownOpen(true) // Auto-open on 1st attempt only
+          // Only auto-open feedback dropdown after 3 attempts
+          if (submission.attempt_number >= 3) {
+            setIsFeedbackDropdownOpen(true) // Auto-open after 3 attempts
           }
         }
         
@@ -704,9 +885,9 @@ export default function ActivityEditorPage() {
         if (submission.validation_summary) {
           console.log('📊 Validation summary:', submission.validation_summary)
           displayValidationFeedback(submission.validation_summary)
-          // Only auto-open feedback dropdown on first attempt
-          if (submission.attempt_number === 1) {
-            setIsFeedbackDropdownOpen(true) // Auto-open on 1st attempt only
+          // Only auto-open feedback dropdown after 3 attempts
+          if (submission.attempt_number >= 3) {
+            setIsFeedbackDropdownOpen(true) // Auto-open after 3 attempts
           }
         }
         
@@ -715,18 +896,18 @@ export default function ActivityEditorPage() {
           console.log('📋 Instruction progress:', submission.instruction_progress)
           try {
             displayInstructionFeedback(submission.instruction_progress)
-            // Only auto-open feedback dropdown on first attempt
-            if (submission.attempt_number === 1) {
-              setIsFeedbackDropdownOpen(true) // Auto-open on 1st attempt only
+            // Only auto-open feedback dropdown after 3 attempts
+            if (submission.attempt_number >= 3) {
+              setIsFeedbackDropdownOpen(true) // Auto-open after 3 attempts
             }
     } catch (error) {
             console.warn('⚠️ Error displaying instruction feedback:', error)
           }
         }
         
-        // Auto-open dropdown if there's detailed feedback (only on 1st attempt)
-        if (submission.feedback && submission.attempt_number === 1) {
-          setIsFeedbackDropdownOpen(true) // Auto-open on 1st attempt only
+        // Auto-open dropdown if there's detailed feedback (after 3 attempts)
+        if (submission.feedback && submission.attempt_number >= 3) {
+          setIsFeedbackDropdownOpen(true) // Auto-open after 3 attempts
         }
       }
       
@@ -738,9 +919,17 @@ export default function ActivityEditorPage() {
     } catch (error) {
       console.error('❌ Activity submission failed:', error)
       
-      // Show user-friendly error message
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      alert(`Submission failed: ${errorMessage}. Please try again or check your internet connection.`)
+      // Show submission modal with error
+      const errorSubmission = {
+        completion_status: 'failed',
+        attempt_number: attempts + 1,
+        feedback: error instanceof Error ? error.message : 'Unknown error occurred',
+        validation_summary: {
+          overall: { passed: 0, total: 1 }
+        }
+      }
+      setSubmissionModalData(errorSubmission)
+      setShowSubmissionModal(true)
       
       // Don't fall back to old validation - force proper submission
       setDetailedFeedback('Submission failed. Please ensure you are logged in and try again.')
@@ -950,6 +1139,11 @@ export default function ActivityEditorPage() {
     router.back()
   }
 
+  const handleSubmissionModalClose = () => {
+    setShowSubmissionModal(false)
+    setSubmissionModalData(null)
+  }
+
   // Loading state
   if (loading) {
     return (
@@ -1061,54 +1255,56 @@ export default function ActivityEditorPage() {
                 )}
               </div>
 
-              {/* Feedback Dropdown Button */}
-              <div 
-                className="flex items-center space-x-2 cursor-pointer hover:bg-[var(--surface-hover)] px-3 py-2 rounded-lg transition-colors duration-200"
-                onClick={() => setIsFeedbackDropdownOpen(!isFeedbackDropdownOpen)}
-              >
-                <div className="relative">
-                  <MessageCircle className="h-5 w-5 text-blue-600" />
-                  {feedbackCount > 0 && <NotificationBadge count={feedbackCount} />}
-                </div>
-                <h3 className="text-lg font-medium text-[var(--text-primary)]">Feedback & Progress</h3>
-                
-                {/* Status Indicators */}
-                <div className="flex items-center space-x-2">
-                  {instructionProgress && (
-                    <div className="flex items-center space-x-1 bg-blue-100 px-2 py-1 rounded-full">
-                      <span className="text-xs font-medium text-blue-700">
-                        {instructionProgress.completed}/{instructionProgress.total} Steps
-                      </span>
-                    </div>
-                  )}
+              {/* Feedback Dropdown Button - Only show after 3 attempts */}
+              {attempts >= 3 && (
+                <div 
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-[var(--surface-hover)] px-3 py-2 rounded-lg transition-colors duration-200"
+                  onClick={() => setIsFeedbackDropdownOpen(!isFeedbackDropdownOpen)}
+                >
+                  <div className="relative">
+                    <MessageCircle className="h-5 w-5 text-blue-600" />
+                    {feedbackCount > 0 && <NotificationBadge count={feedbackCount} />}
+                  </div>
+                  <h3 className="text-lg font-medium text-[var(--text-primary)]">Feedback & Progress</h3>
                   
-                  {validationResults && validationResults.overall && (
-                    <div className="flex items-center space-x-1 bg-green-100 px-2 py-1 rounded-full">
-                      <span className="text-xs font-medium text-green-700">
-                        {validationResults.overall.passed}/{validationResults.overall.total} Checks
-                      </span>
-                    </div>
-                  )}
-                  
-                  {detailedFeedback && !isCompleted && (
-                    <div className="flex items-center space-x-1 bg-red-100 px-2 py-1 rounded-full">
-                      <span className="text-xs font-medium text-red-700">Feedback</span>
-                    </div>
-                  )}
-                  
-                  {showHints && (
-                    <div className="flex items-center space-x-1 bg-orange-100 px-2 py-1 rounded-full">
-                      <span className="text-xs font-medium text-orange-700">Hints Available</span>
-                    </div>
-                  )}
-                </div>
+                  {/* Status Indicators */}
+                  <div className="flex items-center space-x-2">
+                    {instructionProgress && (
+                      <div className="flex items-center space-x-1 bg-blue-100 px-2 py-1 rounded-full">
+                        <span className="text-xs font-medium text-blue-700">
+                          {instructionProgress.completed}/{instructionProgress.total} Steps
+                        </span>
+                      </div>
+                    )}
+                    
+                    {validationResults && validationResults.overall && (
+                      <div className="flex items-center space-x-1 bg-green-100 px-2 py-1 rounded-full">
+                        <span className="text-xs font-medium text-green-700">
+                          {validationResults.overall.passed}/{validationResults.overall.total} Checks
+                        </span>
+                      </div>
+                    )}
+                    
+                    {detailedFeedback && !isCompleted && (
+                      <div className="flex items-center space-x-1 bg-red-100 px-2 py-1 rounded-full">
+                        <span className="text-xs font-medium text-red-700">Feedback</span>
+                      </div>
+                    )}
+                    
+                    {showHints && (
+                      <div className="flex items-center space-x-1 bg-orange-100 px-2 py-1 rounded-full">
+                        <span className="text-xs font-medium text-orange-700">Hints Available</span>
+                      </div>
+                    )}
+                  </div>
 
-                {isFeedbackDropdownOpen ? (
-                  <ChevronUp className="h-4 w-4 text-[var(--text-tertiary)]" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-[var(--text-tertiary)]" />
-                )}
-              </div>
+                  {isFeedbackDropdownOpen ? (
+                    <ChevronUp className="h-4 w-4 text-[var(--text-tertiary)]" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-[var(--text-tertiary)]" />
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Right Side - Action Buttons */}
@@ -1180,8 +1376,8 @@ export default function ActivityEditorPage() {
         </div>
       )}
 
-      {/* Feedback Dropdown Content */}
-      {isFeedbackDropdownOpen && (
+      {/* Feedback Dropdown Content - Only show after 3 attempts */}
+      {isFeedbackDropdownOpen && attempts >= 3 && (
         <div className="bg-[var(--surface)] border-b border-[var(--border)] shadow-sm">
           <div className="max-w-7xl mx-auto px-4">
             <div className="pb-4 border-t border-[var(--divider)] animate-slideDown">
@@ -1895,6 +2091,13 @@ export default function ActivityEditorPage() {
           </div>
         </div>
       </div>
+
+      {/* Submission Result Modal */}
+      <SubmissionResultModal
+        isVisible={showSubmissionModal}
+        onClose={handleSubmissionModalClose}
+        data={submissionModalData}
+      />
 
       {/* Celebration Overlay - Only show when activity is truly completed */}
       <CelebrationOverlay
