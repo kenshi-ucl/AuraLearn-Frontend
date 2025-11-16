@@ -827,6 +827,7 @@ export default function ActivityEditorPage() {
         // Show submission modal for failed attempts
         setSubmissionModalData(submission)
         setShowSubmissionModal(true)
+        setIsRunning(false) // Reset the running state before returning
         return
       }
       
@@ -933,9 +934,10 @@ export default function ActivityEditorPage() {
       
       // Don't fall back to old validation - force proper submission
       setDetailedFeedback('Submission failed. Please ensure you are logged in and try again.')
+      setIsRunning(false) // Reset the running state on error
+    } finally {
+      setIsRunning(false) // Ensure isRunning is always reset
     }
-    
-      setIsRunning(false)
   }
 
   // Display detailed validation feedback to help students
